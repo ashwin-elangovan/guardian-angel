@@ -19,8 +19,8 @@ app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnect
 def hello():
     return "Hello World!"
 
-user_collection = mongo.db.users
-user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)])
+# user_collection = mongo.db.users
+# user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)])
 
 # Sample curl
 # curl --location 'http://127.0.0.1:5000/users/register' \
