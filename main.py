@@ -53,9 +53,7 @@ def register_user():
 @token_required
 def add_user_attributes(user_id):
     try:
-        try:
-            ObjectId(user_id)
-        except:
+        if not user_id.isdigit():
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
         data = request.get_json()
@@ -70,7 +68,7 @@ def add_user_attributes(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
 
         user_attributes_collection = mongo.db.User_attributes
-        data['user_id'] = ObjectId(user_id)
+        data['user_id'] = user_id
         user_attributes_collection.insert_one(data)
 
         return jsonify({'message': UserAttributeLocales.USER_ATTRIBUTES_ADDED_SUCCESSFULLY}), 200
@@ -83,7 +81,7 @@ def add_user_attributes(user_id):
 @token_required
 def get_user_attributes(user_id):
     try:
-        if not ObjectId.is_valid(user_id):
+        if not user_id.isdigit():
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
         keys = request.args.get('keys', '').split(',')
@@ -96,7 +94,7 @@ def get_user_attributes(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_KEYS}), 400
 
         query_filter = {
-            'user_id': ObjectId(user_id),
+            'user_id': user_id,
             'timestamp': {'$gte': from_time, '$lte': to_time}
         }
 
@@ -127,8 +125,8 @@ def get_restaurants():
         serialized_restaurants = dumps({'restaurants': restaurants})
         deserialized_restaurants = json.loads(serialized_restaurants)
 
-        for restaurant in deserialized_restaurants['restaurants']:
-            restaurant['id'] = restaurant.pop('_id')['$oid']
+        # for restaurant in deserialized_restaurants['restaurants']:
+        #     restaurant['id'] = restaurant.pop('_id')['$oid']
 
         return jsonify(deserialized_restaurants), 200
 
@@ -148,9 +146,9 @@ def get_foods_for_restaurant(restaurant_id):
         serialized_foods = dumps({'foods': foods})
         deserialized_foods = json.loads(serialized_foods)
 
-        for food in deserialized_foods['foods']:
-            food['id'] = food.pop('_id')['$oid']
-            food['restaurant_id'] = food.pop('restaurant_id')['$oid']
+        # for food in deserialized_foods['foods']:
+        #     food['id'] = food.pop('_id')['$oid']
+        #     food['restaurant_id'] = food.pop('restaurant_id')['$oid']
 
         return jsonify(deserialized_foods), 200
 
