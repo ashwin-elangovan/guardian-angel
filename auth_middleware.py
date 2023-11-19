@@ -3,8 +3,7 @@ from flask import request
 import os
 
 # Will be used in deployment
-# VERIFICATION_KEY = os.getenv('THEIA_CORE_VERIFICATION_KEY')
-VERIFICATION_KEY = 'dummy_verification_key'
+VERIFICATION_KEY = os.getenv('auth_verification_key')
 
 def token_required(f):
     @wraps(f)

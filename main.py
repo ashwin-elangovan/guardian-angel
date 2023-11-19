@@ -221,8 +221,7 @@ def get_foods_for_restaurant(restaurant_id):
 def get_weather():
     try:
         # Will be used in deployment
-        # api_key = os.getenv('openweathermap_api_key')
-        api_key = '<api_token>'
+        api_key = os.getenv('openweathermap_api_key')
         city = request.args.get('city')
 
         if not city:
