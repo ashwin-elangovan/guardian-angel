@@ -17,7 +17,7 @@ app = Flask(__name__)
 swagger = Swagger(app, template_file='swagger.yml', parse=True)
 
 # MongoDB configuration
-# app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
+#app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
 app.config['MONGO_URI'] = os.getenv('DB_URI')
 mongo = PyMongo(app)
 
@@ -143,6 +143,8 @@ def get_foods_for_restaurant(restaurant_id):
             return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
 
         projection = {'_id': 0}
+        all_foods = list(restaurant_food_collection.find(projection=projection))
+        print(all_foods)
         foods = list(restaurant_food_collection.find({'restaurant_id': restaurant_id}, projection=projection))
 
         serialized_foods = dumps({'foods': foods})
