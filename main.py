@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # MongoDB configuration
 app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
-mongo = PyMongo(app)
+# mongo = PyMongo(app)
 
 @app.route('/')
 def hello():
