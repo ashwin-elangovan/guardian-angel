@@ -16,16 +16,16 @@ app = Flask(__name__)
 # swagger = Swagger(app)
 swagger = Swagger(app, template_file='swagger.yml', parse=True)
 
-
 # MongoDB configuration
-app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
+# app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
+app.config['MONGO_URI'] = os.getenv('DB_URI')
 mongo = PyMongo(app)
 
 @app.route('/')
 def hello():
     return "Hello World!"
 
-user_collection = mongo.db.users
+user_collection = mongo.db.User
 user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)])
 
 # User Registration API
@@ -69,7 +69,7 @@ def add_user_attributes(user_id):
         except ValueError:
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
 
-        user_attributes_collection = mongo.db.user_attributes
+        user_attributes_collection = mongo.db.User_attributes
         data['user_id'] = ObjectId(user_id)
         user_attributes_collection.insert_one(data)
 
@@ -104,7 +104,7 @@ def get_user_attributes(user_id):
         projection['_id'] = 0
         projection['timestamp'] = 1
 
-        user_attributes_collection = mongo.db.user_attributes
+        user_attributes_collection = mongo.db.User_Attributes
         results = user_attributes_collection.find(query_filter, projection)
         db_entries = [result for result in results]
         average_values = _calculate_average_values([key for key in keys if key != 'sleep'], db_entries)
@@ -121,7 +121,7 @@ def get_user_attributes(user_id):
 @token_required
 def get_restaurants():
     try:
-        restaurants_collection = mongo.db.restaurants
+        restaurants_collection = mongo.db.Restaurants
         restaurants = list(restaurants_collection.find())
 
         serialized_restaurants = dumps({'restaurants': restaurants})
@@ -139,7 +139,7 @@ def get_restaurants():
 @token_required
 def get_foods_for_restaurant(restaurant_id):
     try:
-        restaurant_food_collection = mongo.db.restaurant_food
+        restaurant_food_collection = mongo.db.Restaurant_Food
         if not ObjectId.is_valid(restaurant_id):
             return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
 
