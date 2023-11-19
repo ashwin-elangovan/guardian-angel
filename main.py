@@ -120,7 +120,8 @@ def get_user_attributes(user_id):
 def get_restaurants():
     try:
         restaurants_collection = mongo.db.Restaurants
-        restaurants = list(restaurants_collection.find())
+        projection = {'_id': 0}
+        restaurants = list(restaurants_collection.find(projection=projection))
 
         serialized_restaurants = dumps({'restaurants': restaurants})
         deserialized_restaurants = json.loads(serialized_restaurants)
@@ -138,17 +139,14 @@ def get_restaurants():
 def get_foods_for_restaurant(restaurant_id):
     try:
         restaurant_food_collection = mongo.db.Restaurant_Food
-        if not ObjectId.is_valid(restaurant_id):
+        if not restaurant_id.isdigit():
             return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
 
-        foods = list(restaurant_food_collection.find({'restaurant_id': ObjectId(restaurant_id)}))
+        projection = {'_id': 0}
+        foods = list(restaurant_food_collection.find({'restaurant_id': restaurant_id}, projection=projection))
 
         serialized_foods = dumps({'foods': foods})
         deserialized_foods = json.loads(serialized_foods)
-
-        # for food in deserialized_foods['foods']:
-        #     food['id'] = food.pop('_id')['$oid']
-        #     food['restaurant_id'] = food.pop('restaurant_id')['$oid']
 
         return jsonify(deserialized_foods), 200
 
