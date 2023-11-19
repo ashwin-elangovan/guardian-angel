@@ -102,11 +102,14 @@ def get_user_attributes(user_id):
 
         projection = {key: 1 for key in keys}
         projection['_id'] = 0
+        projection['timestamp'] = 1
 
         user_attributes_collection = mongo.db.user_attributes
         results = user_attributes_collection.find(query_filter, projection)
-
-        average_values = _calculate_average_values(keys, results)
+        db_entries = [result for result in results]
+        average_values = _calculate_average_values([key for key in keys if key != 'sleep'], db_entries)
+        if 'sleep' in keys:
+            average_values['sleep_time'] = _calculate_sleep_time(db_entries)
 
         return jsonify(average_values), 200
 
@@ -190,6 +193,21 @@ def get_weather():
         return jsonify({'error': str(e)}), 500
 
 # Private functions
+
+def _calculate_sleep_time(sleep_entries):
+    sleep_time_total = 0
+
+    sorted_sleep_entries = sorted(sleep_entries, key=lambda x: x['timestamp'])
+
+    for i in range(1, len(sorted_sleep_entries)):
+        if sorted_sleep_entries[i]['sleep'] == 0:
+            continue
+        sleep_start = sorted_sleep_entries[i - 1]['timestamp']
+        sleep_end = sorted_sleep_entries[i]['timestamp']
+        sleep_duration = sleep_end - sleep_start
+        sleep_time_total += sleep_duration.total_seconds()
+
+    return sleep_time_total
 
 def _parse_timestamps(from_time, to_time):
     try:
