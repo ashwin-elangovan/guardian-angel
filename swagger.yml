@@ -112,7 +112,7 @@ paths:
           required: true
           type: string
           collectionFormat: multi
-          description: List of keys to fetch (e.g., heart_rate, respiratory_rate, steps_count, calories_burnt, blood_oxygen). Separate multiple values with commas.
+          description: List of keys to fetch (e.g., heart_rate,respiratory_rate,steps_count,calories_burnt,blood_oxygen,sleep). Separate multiple values with commas.
         - name: from
           in: query
           type: string

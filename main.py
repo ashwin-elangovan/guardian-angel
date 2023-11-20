@@ -18,6 +18,7 @@ swagger = Swagger(app, template_file='swagger.yml', parse=True)
 
 # MongoDB configuration
 #app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
+# app.config['MONGO_URI'] = 'mongodb+srv://hkeerth1:EcMvR8LEBvmb72dG@cluster0.sdycyfj.mongodb.net/Guardian-Angel?retryWrites=true&w=majority'
 app.config['MONGO_URI'] = os.getenv('DB_URI')
 mongo = PyMongo(app)
 
@@ -53,7 +54,7 @@ def register_user():
 @token_required
 def add_user_attributes(user_id):
     try:
-        if not user_id.isdigit():
+        if not ObjectId(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
         data = request.get_json()
@@ -81,7 +82,7 @@ def add_user_attributes(user_id):
 @token_required
 def get_user_attributes(user_id):
     try:
-        if not user_id.isdigit():
+        if not ObjectId(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
         keys = request.args.get('keys', '').split(',')
@@ -92,7 +93,6 @@ def get_user_attributes(user_id):
 
         if not all(key in USER_ATTRIBUTE_FETCH_KEYS for key in keys):
             return jsonify({'error': UserAttributeLocales.INVALID_KEYS}), 400
-
         query_filter = {
             'user_id': user_id,
             'timestamp': {'$gte': from_time, '$lte': to_time}
@@ -102,14 +102,24 @@ def get_user_attributes(user_id):
         projection['_id'] = 0
         projection['timestamp'] = 1
 
-        user_attributes_collection = mongo.db.User_Attributes
+        user_attributes_collection = mongo.db.User_attributes
         results = user_attributes_collection.find(query_filter, projection)
         db_entries = [result for result in results]
-        average_values = _calculate_average_values([key for key in keys if key != 'sleep'], db_entries)
-        if 'sleep' in keys:
-            average_values['sleep_time'] = _calculate_sleep_time(db_entries)
+        keys_to_average = [key for key in keys if key not in ('sleep', 'steps_count', 'calories_burnt')]
+        final_values = {}
+        if keys_to_average:
+            final_values = _calculate_average_values(keys_to_average, db_entries)
 
-        return jsonify(average_values), 200
+        if 'sleep' in keys:
+            final_values['sleep_time'] = _calculate_sleep_time(db_entries)
+
+        if 'steps_count' in keys:
+            final_values['total_steps_count'] = sum(entry['steps_count'] for entry in db_entries)
+
+        if 'calories_burnt' in keys:
+            final_values['total_calories_burnt'] = sum(entry['calories_burnt'] for entry in db_entries)
+
+        return jsonify(final_values), 200
 
     except Exception as e:
         return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
@@ -126,9 +136,6 @@ def get_restaurants():
         serialized_restaurants = dumps({'restaurants': restaurants})
         deserialized_restaurants = json.loads(serialized_restaurants)
 
-        # for restaurant in deserialized_restaurants['restaurants']:
-        #     restaurant['id'] = restaurant.pop('_id')['$oid']
-
         return jsonify(deserialized_restaurants), 200
 
     except Exception as e:
@@ -143,10 +150,7 @@ def get_foods_for_restaurant(restaurant_id):
             return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
 
         projection = {'_id': 0}
-        all_foods = list(restaurant_food_collection.find(projection=projection))
-        print(all_foods)
-        foods = list(restaurant_food_collection.find({'restaurant_id': restaurant_id}, projection=projection))
-
+        foods = list(restaurant_food_collection.find({'restaurant_id': int(restaurant_id)}, projection=projection))
         serialized_foods = dumps({'foods': foods})
         deserialized_foods = json.loads(serialized_foods)
 
