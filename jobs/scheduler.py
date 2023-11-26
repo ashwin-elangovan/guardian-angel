@@ -9,7 +9,7 @@ from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from pytz import utc
-from data_collection.sensor_data import generate_mock_data
+from dataCollection.sensor_data import generate_mock_data
 
 load_dotenv()
 
