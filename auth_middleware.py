@@ -1,6 +1,9 @@
 from functools import wraps
 from flask import request
 import os
+# from dotenv import load_dotenv
+
+# load_dotenv()
 
 # Will be used in deployment
 VERIFICATION_KEY = os.getenv('auth_verification_key')

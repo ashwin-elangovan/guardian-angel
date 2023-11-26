@@ -13,6 +13,7 @@ from constants import REGISTRATION_REQUIRED_FIELDS, USER_ATTRIBUTE_REQUIRED_FIEL
 from locales import UserAttributeLocales, UserRegistrationLocales, RestaurantFoodLocales, WeatherLocales
 import logging
 from dataAccess.mongoData import mongoData
+from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_job
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -208,6 +209,26 @@ def get_weather():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/jobs', methods=['POST'])
+@token_required
+def schedule_job_route():
+    return schedule_job(request)
+
+@app.route('/jobs/<string:job_id>', methods=['PUT'])
+@token_required
+def update_job_route(job_id):
+    return update_job(request, job_id)
+
+@app.route('/jobs/<string:job_id>', methods=['DELETE'])
+@token_required
+def delete_job_route(job_id):
+    return delete_job(request, job_id)
+
+@app.route('/jobs', methods=['GET'])
+@token_required
+def get_all_jobs():
+    return get_all_job_stats()
+
 # Private functions
 
 def _calculate_sleep_time(sleep_entries):
@@ -252,4 +273,4 @@ def _calculate_average_values(keys, results):
     return average_values
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
