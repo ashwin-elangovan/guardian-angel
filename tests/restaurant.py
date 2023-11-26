@@ -12,7 +12,6 @@ class RestaurantsTest(unittest.TestCase):
         cls.db = mongoData(app).mongo.db
         cls.app = app.test_client()
 
-        # Insert mock data for all tests in the class
         mock_data = [
             {
                 "name": "McDonalds",

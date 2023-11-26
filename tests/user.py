@@ -11,7 +11,7 @@ from bson import ObjectId
 from locales import UserAttributeLocales, UserRegistrationLocales
 import secrets
 import string
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 def generate_random_string(length):
     characters = string.ascii_lowercase + string.digits
@@ -51,7 +51,6 @@ class UserRegistration(unittest.TestCase):
         headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
         response = self.app.post('/users/register', json=data, headers=headers)
         result = response.get_json()
-        print(result)
         self.assertEqual(response.status_code, 200)
         self.assertIn('message', result)
         self.assertIn('user_id', result)
@@ -70,7 +69,6 @@ class UserRegistration(unittest.TestCase):
         headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
         response = self.app.post('/users/register', json=data, headers=headers)
         result = response.get_json()
-        print(result)
         self.assertEqual(response.status_code, 400)
         self.assertIn('error', result)
         self.assertEqual(result['error'], 'Email address is already registered')
@@ -85,7 +83,6 @@ class UserRegistration(unittest.TestCase):
         headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
         response = self.app.post('/users/register', json=data, headers=headers)
         result = response.get_json()
-        print(result)
         self.assertEqual(response.status_code, 400)
         self.assertIn('error', result)
         self.assertIn('Missing required field', result['error'])
@@ -134,7 +131,6 @@ class UserAttributesTest(unittest.TestCase):
         self.assertIn('message', result)
         self.assertEqual(result['message'], UserAttributeLocales.USER_ATTRIBUTES_ADDED_SUCCESSFULLY)
 
-        # Optionally, you can check the database to verify the inserted data
         inserted_data = self.db.User_attributes.find_one({'user_id': user_id})
         self.assertIsNotNone(inserted_data)
         self.assertEqual(inserted_data['heart_rate'], 65)
@@ -185,40 +181,119 @@ class UserAttributesTest(unittest.TestCase):
         self.assertIn('Invalid timestamp format', result['error'])
 
     def test_get_user_attributes_success(self):
-        user_id = self.user_id
+        headers = {'X-Api-Auth': VERIFICATION_KEY}
+        current_date = datetime.now(timezone.utc)
+        from_date = current_date - timedelta(weeks=1)
+        to_date = current_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        from_date_str = from_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        to_date_str = to_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
         mock_data = [
-            {'user_id': user_id, 'heart_rate': 65, 'timestamp': datetime.utcnow()},
-            {'user_id': user_id, 'heart_rate': 70, 'timestamp': datetime.utcnow()}
+            {
+                'user_id': self.user_id,
+                'heart_rate': 65,
+                'respiratory_rate': 13,
+                'steps_count': 500,
+                'calories_burnt': 300,
+                'blood_oxygen': 95,
+                'timestamp': datetime.now(timezone.utc)
+            },
+            {
+                'user_id': self.user_id,
+                'heart_rate': 70,
+                'respiratory_rate': 15,
+                'steps_count': 600,
+                'calories_burnt': 400,
+                'blood_oxygen': 92,
+                'timestamp': datetime.now(timezone.utc)
+            }
         ]
-        self.app.post(f'/users/{user_id}/user_attributes', json=mock_data[0])
-        self.app.post(f'/users/{user_id}/user_attributes', json=mock_data[1])
 
-        headers = {'X-Api-Auth': 'VERIFICATION_KEY'}
-        response = self.app.get(f'/users/{user_id}/user_attributes?keys=heart_rate&from=2022-01-01T00:00:00Z', headers=headers)
+        user_attributes_collection = self.db.User_attributes
+        user_attributes_collection.insert_many(mock_data)
 
+        response = self.app.get(f'/users/{self.user_id}/user_attributes?keys=heart_rate,respiratory_rate,steps_count,calories_burnt,blood_oxygen&from={from_date_str}&to={to_date_str}', headers=headers)
         self.assertEqual(response.status_code, 200)
         result = response.get_json()
+
         self.assertIn('average_heart_rate', result)
         self.assertEqual(result['average_heart_rate'], (65 + 70) / 2)
 
-    def test_get_user_attributes_invalid_timestamp_format(self):
-        user_id = str(ObjectId())
-        headers = {'X-Api-Auth': 'your_api_key'}
-        response = self.app.get(f'/users/{user_id}/user_attributes?keys=heart_rate&from=invalid_timestamp', headers=headers)
+        self.assertIn('average_respiratory_rate', result)
+        self.assertEqual(result['average_respiratory_rate'], (13 + 15) / 2)
 
+        self.assertIn('total_steps_count', result)
+        self.assertEqual(result['total_steps_count'], 500 + 600)
+
+        self.assertIn('total_calories_burnt', result)
+        self.assertEqual(result['total_calories_burnt'], 300 + 400)
+
+        self.assertIn('average_blood_oxygen', result)
+        self.assertEqual(result['average_blood_oxygen'], (95 + 92) / 2)
+
+        user_attributes_collection.delete_many({'user_id': self.user_id})
+
+    def test_get_user_attributes_success_sleep_time(self):
+        headers = {'X-Api-Auth': VERIFICATION_KEY}
+        current_date = datetime.now(timezone.utc)
+        from_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        to_date = current_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        from_date_str = from_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        to_date_str = to_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        mock_data = [
+            {'user_id': self.user_id, 'sleep': 0, 'timestamp': current_date - timedelta(minutes=120)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=110)},
+            {'user_id': self.user_id, 'sleep': 0, 'timestamp': current_date - timedelta(minutes=100)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=90)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=80)},
+            {'user_id': self.user_id, 'sleep': 0, 'timestamp': current_date - timedelta(minutes=70)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=60)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=50)},
+            {'user_id': self.user_id, 'sleep': 0, 'timestamp': current_date - timedelta(minutes=40)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=30)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=20)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date - timedelta(minutes=10)},
+            {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date},
+        ]
+
+        user_attributes_collection = self.db.User_attributes
+        user_attributes_collection.insert_many(mock_data)
+
+        response = self.app.get(f'/users/{self.user_id}/user_attributes?keys=sleep&from={from_date_str}&to={to_date_str}', headers=headers)
+        self.assertEqual(response.status_code, 200)
+        result = response.get_json()
+
+        # Asserting results for sleep time
+        self.assertIn('sleep_time', result)
+        self.assertEqual(result['sleep_time'], 5400)
+
+        user_attributes_collection.delete_many({'user_id': self.user_id})
+
+    def test_get_user_attributes_invalid_timestamp_format(self):
+        user_id = self.user_id
+        headers = {'X-Api-Auth': VERIFICATION_KEY}
+        response = self.app.get(f'/users/{user_id}/user_attributes?keys=heart_rate&from=invalid_timestamp', headers=headers)
         self.assertEqual(response.status_code, 400)
         result = response.get_json()
         self.assertIn('error', result)
         self.assertIn('Invalid timestamp format', result['error'])
 
-    def test_get_user_attributes_missing_keys(self):
-        user_id = str(ObjectId())
-        headers = {'X-Api-Auth': 'your_api_key'}
-        response = self.app.get(f'/users/{user_id}/user_attributes', headers=headers)
-
+    def test_get_user_attributes_invalid_keys(self):
+        user_id = self.user_id
+        headers = {'X-Api-Auth': VERIFICATION_KEY}
+        current_date = datetime.now(timezone.utc)
+        from_date = current_date - timedelta(weeks=1)
+        to_date = current_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+        from_date_str = from_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        to_date_str = to_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        response = self.app.get(f'/users/{user_id}/user_attributes?keys=ashwin&from={from_date_str}&to={to_date_str}', headers=headers)
         self.assertEqual(response.status_code, 400)
         result = response.get_json()
         self.assertIn('error', result)
         self.assertIn('Invalid keys', result['error'])
+
 if __name__ == '__main__':
     unittest.main()
