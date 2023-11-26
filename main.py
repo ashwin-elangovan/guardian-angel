@@ -11,23 +11,24 @@ import os
 from flasgger import Swagger
 from constants import REGISTRATION_REQUIRED_FIELDS, USER_ATTRIBUTE_REQUIRED_FIELDS, USER_ATTRIBUTE_FETCH_KEYS, WEATHER_API_HOST
 from locales import UserAttributeLocales, UserRegistrationLocales, RestaurantFoodLocales, WeatherLocales
+import logging
+from dataAccess.mongoData import mongoData
 
 app = Flask(__name__)
-# swagger = Swagger(app)
+app.logger.setLevel(logging.DEBUG)
 swagger = Swagger(app, template_file='swagger.yml', parse=True)
 
-# MongoDB configuration
-#app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
-# app.config['MONGO_URI'] = 'mongodb+srv://hkeerth1:EcMvR8LEBvmb72dG@cluster0.sdycyfj.mongodb.net/Guardian-Angel?retryWrites=true&w=majority'
-app.config['MONGO_URI'] = os.getenv('DB_URI')
-mongo = PyMongo(app)
 
 @app.route('/')
 def hello():
     return "Hello World!"
 
-user_collection = mongo.db.User
-user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)])
+
+db = mongoData(app).mongo.db
+user_collection = db.User
+existing_indexes = user_collection.index_information()
+if 'email_1' not in existing_indexes:
+    user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)])
 
 # User Registration API
 @app.route('/users/register', methods=['POST'])
@@ -35,16 +36,18 @@ user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)]
 def register_user():
     try:
         data = request.get_json()
-
         for field in REGISTRATION_REQUIRED_FIELDS:
             if field not in data:
                 return jsonify({'error': UserRegistrationLocales.MISSING_REQUIRED_FIELD.format(field)}), 400
 
+        mongo = mongoData(app).mongo
+        user_collection = mongo.db.User
         user_id = user_collection.insert_one(data).inserted_id
 
         return jsonify({'message': UserRegistrationLocales.USER_REGISTERED_SUCCESSFULLY, 'user_id': str(user_id)}), 200
 
     except Exception as e:
+        print("Exception", e)
         if 'duplicate key' in str(e).lower():
             return jsonify({'error': UserRegistrationLocales.EMAIL_ALREADY_REGISTERED}), 400
         return jsonify({'error': f'{UserRegistrationLocales.ERROR}: {str(e)}'}), 500
@@ -68,6 +71,7 @@ def add_user_attributes(user_id):
         except ValueError:
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
 
+        mongo = mongoData(app).mongo
         user_attributes_collection = mongo.db.User_attributes
         data['user_id'] = user_id
         user_attributes_collection.insert_one(data)
@@ -129,6 +133,7 @@ def get_user_attributes(user_id):
 @token_required
 def get_restaurants():
     try:
+        mongo = mongoData(app).mongo
         restaurants_collection = mongo.db.Restaurants
         projection = {'_id': 0}
         restaurants = list(restaurants_collection.find(projection=projection))
@@ -139,24 +144,30 @@ def get_restaurants():
         return jsonify(deserialized_restaurants), 200
 
     except Exception as e:
+        print("Exception", e)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/restaurants/<string:restaurant_id>/foods', methods=['GET'])
 @token_required
 def get_foods_for_restaurant(restaurant_id):
     try:
+        mongo = mongoData(app).mongo
         restaurant_food_collection = mongo.db.Restaurant_Food
-        if not restaurant_id.isdigit():
-            return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
+
+        # if not restaurant_id.isdigit():
+        #     return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
+        # projection = {'_id': 0}
+        # foods = list(restaurant_food_collection.find({'restaurant_id': int(restaurant_id)}, projection=projection))
 
         projection = {'_id': 0}
-        foods = list(restaurant_food_collection.find({'restaurant_id': int(restaurant_id)}, projection=projection))
+        foods = list(restaurant_food_collection.find({'restaurant_id': ObjectId(restaurant_id)}, projection=projection))
         serialized_foods = dumps({'foods': foods})
         deserialized_foods = json.loads(serialized_foods)
 
         return jsonify(deserialized_foods), 200
 
     except Exception as e:
+        print("Exception", e)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/weather', methods=['GET'])
