@@ -75,7 +75,6 @@ def add_user_attributes(user_id):
         user_attributes_collection = mongo.db.User_attributes
         data['user_id'] = user_id
         user_attributes_collection.insert_one(data)
-
         return jsonify({'message': UserAttributeLocales.USER_ATTRIBUTES_ADDED_SUCCESSFULLY}), 200
 
     except Exception as e:
@@ -89,12 +88,15 @@ def get_user_attributes(user_id):
         if not ObjectId(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
+        mongo = mongoData(app).mongo
         keys = request.args.get('keys', '').split(',')
         from_time = request.args.get('from', '')
         to_time = request.args.get('to', '')
 
-        from_time, to_time = _parse_timestamps(from_time, to_time)
+        if from_time == '' or to_time == '':
+            return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
 
+        from_time, to_time = _parse_timestamps(from_time, to_time)
         if not all(key in USER_ATTRIBUTE_FETCH_KEYS for key in keys):
             return jsonify({'error': UserAttributeLocales.INVALID_KEYS}), 400
         query_filter = {
@@ -126,6 +128,7 @@ def get_user_attributes(user_id):
         return jsonify(final_values), 200
 
     except Exception as e:
+        print("Exception", e)
         return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
 
 # API endpoint to get all restaurants
