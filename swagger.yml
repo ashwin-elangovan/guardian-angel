@@ -344,6 +344,82 @@ paths:
               error:
                 type: string
                 description: Error message.
+  /jobs:
+    post:
+      summary: 'Schedule a new job'
+      description: 'Endpoint to schedule a new job'
+      tags:
+        - 'Jobs'
+      parameters:
+        - name: 'body'
+          in: 'body'
+          description: 'Job details'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              user_id:
+                type: 'string'
+              interval:
+                type: 'integer'
+      responses:
+        '200':
+          description: 'Job scheduled successfully'
+        '400':
+          description: 'Bad Request'
+    get:
+      summary: 'Get all job stats'
+      description: 'Endpoint to get all job statistics'
+      tags:
+        - 'Jobs'
+      responses:
+        '200':
+          description: 'Job stats retrieved successfully'
+        '400':
+          description: 'Bad Request'
+  /jobs/{job_id}:
+    put:
+      summary: 'Update a job'
+      description: 'Endpoint to update a job'
+      tags:
+        - 'Jobs'
+      parameters:
+        - name: 'job_id'
+          in: 'path'
+          description: 'ID of the job to update'
+          required: true
+          type: 'string'
+        - name: 'body'
+          in: 'body'
+          description: 'Job details'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              interval:
+                type: 'integer'
+      responses:
+        '200':
+          description: 'Job updated successfully'
+        '400':
+          description: 'Bad Request'
+
+    delete:
+      summary: 'Delete a job'
+      description: 'Endpoint to delete a job'
+      tags:
+        - 'Jobs'
+      parameters:
+        - name: 'job_id'
+          in: 'path'
+          description: 'ID of the job to delete'
+          required: true
+          type: 'string'
+      responses:
+        '200':
+          description: 'Job deleted successfully'
+        '400':
+          description: 'Bad Request'
 
 securityDefinitions:
   ApiKeyAuth:
