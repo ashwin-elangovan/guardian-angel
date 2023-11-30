@@ -15,6 +15,7 @@ import logging
 from data_access.mongoData import mongoData
 from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_job
 from feature_modules.sleep_wellness.controller import optimal_wake_up_time
+from feature_modules.health_fuzzy_impl import health_monitoring_system
 from datetime import datetime, timezone
 
 app = Flask(__name__)
@@ -235,6 +236,22 @@ def get_all_jobs():
 @token_required
 def wake_up_time(user_id):
     return jsonify({'wake_up_time': optimal_wake_up_time(user_id)}), 200
+
+@app.route('/healthFuzzy', methods=['GET'])
+def get_user_attributes():
+    try:
+        hr = request.args.get('hr', type=int)
+        rr = request.args.get('rr', type=int)
+        sc = request.args.get('sc', type=int)
+
+        health_update = health_monitoring_system(hr, rr, sc)
+        health_update_json = {
+            'health_score': health_update
+        }
+        return jsonify(health_update_json)
+    except Exception as e:
+        print("Exception", e)
+        return jsonify({'error': f'{"ERROR"}: {str(e)}'}), 500
 
 # Private functions
 
