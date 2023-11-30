@@ -4,7 +4,7 @@ from flask_pymongo import PyMongo
 from mongomock import MongoClient
 from main import app
 from pymongo import IndexModel, ASCENDING
-from dataAccess.mongoData import mongoData
+from data_access.mongoData import mongoData
 import os
 from auth_middleware import VERIFICATION_KEY
 from bson import ObjectId

@@ -1,7 +1,7 @@
 import random
 from datetime import datetime, timedelta
 from bson import ObjectId
-from dataAccess.mongoData import mongoData
+from data_access.mongoData import mongoData
 from flask_pymongo import PyMongo
 import logging
 from flask import Flask, request, jsonify, json
