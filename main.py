@@ -246,7 +246,7 @@ def get_health_update():
 
         health_update = health_monitoring_system(hr, rr, sc)
         health_update_json = {
-            'health_score': health_update
+            'health_update': health_update
         }
         return jsonify(health_update_json)
     except Exception as e:
