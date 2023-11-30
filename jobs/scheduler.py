@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
-from dataAccess.mongoData import mongoData
+from data_access.mongoData import mongoData
 import logging
 from dotenv import load_dotenv
 import os
@@ -9,7 +9,7 @@ from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from pytz import utc
-from dataCollection.sensor_data import generate_mock_data
+from data_collection.sensor_data import generate_mock_data
 
 load_dotenv()
 

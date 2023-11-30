@@ -2,7 +2,7 @@ import unittest
 from flask import Flask, json
 from flask_pymongo import PyMongo
 from main import app
-from dataAccess.mongoData import mongoData
+from data_access.mongoData import mongoData
 from auth_middleware import VERIFICATION_KEY
 
 class RestaurantsTest(unittest.TestCase):

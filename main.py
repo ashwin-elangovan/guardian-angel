@@ -12,7 +12,7 @@ from flasgger import Swagger
 from constants import REGISTRATION_REQUIRED_FIELDS, USER_ATTRIBUTE_REQUIRED_FIELDS, USER_ATTRIBUTE_FETCH_KEYS, WEATHER_API_HOST
 from locales import UserAttributeLocales, UserRegistrationLocales, RestaurantFoodLocales, WeatherLocales
 import logging
-from dataAccess.mongoData import mongoData
+from data_access.mongoData import mongoData
 from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_job
 
 app = Flask(__name__)
