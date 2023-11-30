@@ -1,7 +1,13 @@
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
+from data_access.mongoData import mongoData
+# from main import app
+from flask import Flask, request, jsonify, json
+from flask_pymongo import PyMongo
+from datetime import datetime, timezone
 
+app = Flask(__name__)
 def create_fuzzy_variables():
     avg_sleep_time = ctrl.Antecedent(np.arange(0, 13, 1), 'avg_sleep_time')
     calories_burnt = ctrl.Antecedent(np.arange(0, 3001, 1), 'calories_burnt')
@@ -279,14 +285,14 @@ def create_fuzzy_rules(avg_sleep_time, calories_burnt, preference, wake_up_time)
 def create_fuzzy_system(rules):
     return ctrl.ControlSystem(rules)
 
-def predict_wake_up_time(user_input, wake_up_time_prediction):
-    # Get calories burnt and avg sleep time from mongoDB
+def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
     # Get user_input from user_attributes
     user_preference = {"early": 3, "normal": 6, "late": 9}.get(user_input, 6)
 
     wake_up_time_prediction.input['preference'] = user_preference
-    wake_up_time_prediction.input['avg_sleep_time'] = 5
-    wake_up_time_prediction.input['calories_burnt'] = 1500
+
+    wake_up_time_prediction.input['avg_sleep_time'] = get_average_sleep_time(user_id)
+    wake_up_time_prediction.input['calories_burnt'] = get_average_calories_burnt(user_id)
 
     wake_up_time_prediction.compute()
 
@@ -304,5 +310,69 @@ def optimal_wake_up_time(user_id):
     user_input = "normal"  # Mock data for now (Will be changed in Project 5)
     predicted_wake_up_time = predict_wake_up_time(user_id, user_input, wake_up_time_prediction)
 
-    print("Predicted Wake-up Time:", predicted_wake_up_time)
+    print("Predicted Wake-up Time in minutes:", predicted_wake_up_time)
+    return predicted_wake_up_time
+
+
+def get_average_sleep_time(user_id):
+    try:
+        mongo = mongoData(app).mongo
+        keys = ['sleep']
+        from_time = datetime.strptime('2023-11-28T00:00:00Z', "%Y-%m-%dT%H:%M:%SZ")
+        to_time = datetime.strptime('2023-11-29T23:59:59Z', "%Y-%m-%dT%H:%M:%SZ")
+        query_filter = {
+            'user_id': user_id,
+            'timestamp': {'$gte': from_time, '$lte': to_time}
+        }
+        projection = {key: 1 for key in keys}
+        projection['_id'] = 0
+        projection['timestamp'] = 1
+        user_attributes_collection = mongo.db.User_attributes
+        results = user_attributes_collection.find(query_filter, projection)
+        db_entries = [result for result in results]
+        final_values = {}
+        sleep_time = _calculate_sleep_time(db_entries)
+
+        return sleep_time/60/60/2 # in hours per day
+
+    except Exception as e:
+        print("Exception", e)
+
+
+def _calculate_sleep_time(sleep_entries):
+    sleep_time_total = 0
+
+    sorted_sleep_entries = sorted(sleep_entries, key=lambda x: x['timestamp'])
+
+    for i in range(1, len(sorted_sleep_entries)):
+        if sorted_sleep_entries[i]['sleep'] == 0:
+            continue
+        sleep_start = sorted_sleep_entries[i - 1]['timestamp']
+        sleep_end = sorted_sleep_entries[i]['timestamp']
+        sleep_duration = sleep_end - sleep_start
+        sleep_time_total += sleep_duration.total_seconds()
+
+    return sleep_time_total
+
+def get_average_calories_burnt(user_id):
+    try:
+        mongo = mongoData(app).mongo
+        keys = ['calories_burnt']
+        from_time = datetime.strptime('2023-11-30T00:00:00Z', "%Y-%m-%dT%H:%M:%SZ")
+        to_time = datetime.strptime('2023-11-30T23:59:59Z', "%Y-%m-%dT%H:%M:%SZ")
+        query_filter = {
+            'user_id': user_id,
+            'timestamp': {'$gte': from_time, '$lte': to_time}
+        }
+        projection = {key: 1 for key in keys}
+        projection['_id'] = 0
+        projection['timestamp'] = 1
+        user_attributes_collection = mongo.db.User_attributes
+        results = user_attributes_collection.find(query_filter, projection)
+        db_entries = [result for result in results]
+        calories_burnt_per_day = sum(entry['calories_burnt'] for entry in db_entries)
+        return calories_burnt_per_day
+    except Exception as e:
+        print("Exception", e)
+
 

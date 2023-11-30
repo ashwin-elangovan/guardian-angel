@@ -110,9 +110,6 @@ def get_user_attributes(user_id):
         projection = {key: 1 for key in keys}
         projection['_id'] = 0
         projection['timestamp'] = 1
-        # print("projection", projection)
-        # print("query_filter", query_filter)
-        # print("DB", mongo.db)
         user_attributes_collection = mongo.db.User_attributes
         results = user_attributes_collection.find(query_filter, projection)
         db_entries = [result for result in results]
