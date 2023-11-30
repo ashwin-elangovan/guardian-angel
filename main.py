@@ -14,6 +14,8 @@ from locales import UserAttributeLocales, UserRegistrationLocales, RestaurantFoo
 import logging
 from data_access.mongoData import mongoData
 from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_job
+from feature_modules.sleep_wellness.controller import optimal_wake_up_time
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -85,6 +87,7 @@ def add_user_attributes(user_id):
 @app.route('/users/<string:user_id>/user_attributes', methods=['GET'])
 @token_required
 def get_user_attributes(user_id):
+    print("Entry point")
     try:
         if not ObjectId(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
@@ -104,14 +107,16 @@ def get_user_attributes(user_id):
             'user_id': user_id,
             'timestamp': {'$gte': from_time, '$lte': to_time}
         }
-
         projection = {key: 1 for key in keys}
         projection['_id'] = 0
         projection['timestamp'] = 1
-
+        # print("projection", projection)
+        # print("query_filter", query_filter)
+        # print("DB", mongo.db)
         user_attributes_collection = mongo.db.User_attributes
         results = user_attributes_collection.find(query_filter, projection)
         db_entries = [result for result in results]
+        # print("DB entries", db_entries)
         keys_to_average = [key for key in keys if key not in ('sleep', 'steps_count', 'calories_burnt')]
         final_values = {}
         if keys_to_average:
@@ -228,6 +233,11 @@ def delete_job_route(job_id):
 @token_required
 def get_all_jobs():
     return get_all_job_stats()
+
+@app.route('/users/<string:user_id>/wake_up_time', methods=['GET'])
+@token_required
+def wake_up_time(user_id):
+    return jsonify({'wake_up_time': optimal_wake_up_time(user_id)}), 200
 
 # Private functions
 
