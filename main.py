@@ -238,7 +238,7 @@ def wake_up_time(user_id):
     return jsonify({'wake_up_time': optimal_wake_up_time(user_id)}), 200
 
 @app.route('/healthFuzzy', methods=['GET'])
-def get_user_attributes():
+def get_health_update():
     try:
         hr = request.args.get('hr', type=int)
         rr = request.args.get('rr', type=int)
