@@ -5,8 +5,6 @@ from skfuzzy import control as ctrl
 # Create fuzzy variables
 avg_sleep_time = ctrl.Antecedent(np.arange(0, 13, 1), 'avg_sleep_time')
 calories_burnt = ctrl.Antecedent(np.arange(0, 3001, 1), 'calories_burnt')
-# heart_rate = ctrl.Antecedent(np.arange(0, 141, 1), 'heart_rate')
-# respiratory_rate = ctrl.Antecedent(np.arange(0, 25, 1), 'respiratory_rate')
 preference = ctrl.Antecedent(np.arange(0, 13, 1), 'preference')
 wake_up_time = ctrl.Consequent(np.arange(240, 720, 1), 'wake_up_time')
 
@@ -329,9 +327,4 @@ wake_up_time_prediction.compute()
 
 # Print the output
 print("Predicted Wake-up Time:", wake_up_time_prediction.output['wake_up_time'])
-
-
-
-# I need a fuzzy inference system, where it'll take the average sleep time for the past 3 days (integer values), current day's calories burnt (integer), current heart and respiratory rate and user's preference of wakeup time (values: early, on-time, late) as inputs and give the optimal wake up time (this output give how many hours sleep is needed and should also give the exact time in utc).
-# Give me proper fuzzy code in python
 
