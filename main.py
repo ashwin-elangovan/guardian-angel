@@ -237,6 +237,11 @@ def get_all_jobs():
 @app.route('/users/<string:user_id>/wake_up_time', methods=['GET'])
 @token_required
 def wake_up_time(user_id):
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+
     return jsonify({'wake_up_time': optimal_wake_up_time(user_id)}), 200
 
 # Private functions

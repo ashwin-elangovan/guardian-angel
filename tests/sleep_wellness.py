@@ -70,5 +70,40 @@ class TestWakeUpTimeEndpoint(unittest.TestCase):
         mock_get_average_sleep_time.assert_called_with(self.user_id)
         mock_get_average_calories_burnt.assert_called_with(self.user_id)
 
+    @patch('feature_modules.sleep_wellness.controller.optimal_wake_up_time')
+    def test_wake_up_time_endpoint_with_invalid_user_id(self, mock_optimal_wake_up_time):
+        # Mock optimal_wake_up_time function
+        mock_optimal_wake_up_time.return_value = 420
+        headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
+
+        # Make a request with an invalid user_id
+        response = self.app.get('/users/invalid_user_id/wake_up_time', headers=headers)
+
+        # Assertions
+        self.assertEqual(response.status_code, 400)
+
+    @patch('feature_modules.sleep_wellness.controller.optimal_wake_up_time')
+    def test_wake_up_time_endpoint_without_auth_header(self, mock_optimal_wake_up_time):
+        # Mock optimal_wake_up_time function
+        mock_optimal_wake_up_time.return_value = 420
+
+        # Make a request without the X-Api-Auth header
+        response = self.app.get(f'/users/{self.user_id}/wake_up_time')
+
+        # Assertions
+        self.assertEqual(response.status_code, 401)
+
+    @patch('feature_modules.sleep_wellness.controller.optimal_wake_up_time')
+    def test_wake_up_time_endpoint_with_invalid_auth_header(self, mock_optimal_wake_up_time):
+        # Mock optimal_wake_up_time function
+        mock_optimal_wake_up_time.return_value = 420
+        headers = {'Content-Type': 'application/json', 'X-Api-Auth': 'invalid_key'}
+
+        # Make a request with an invalid X-Api-Auth header
+        response = self.app.get(f'/users/{self.user_id}/wake_up_time', headers=headers)
+
+        # Assertions
+        self.assertEqual(response.status_code, 401)
+
 if __name__ == '__main__':
     unittest.main()
