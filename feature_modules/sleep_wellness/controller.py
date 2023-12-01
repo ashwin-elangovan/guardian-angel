@@ -7,7 +7,6 @@ from flask_pymongo import PyMongo
 from datetime import datetime, timezone
 
 app = Flask(__name__)
-
 def create_fuzzy_variables():
     avg_sleep_time = ctrl.Antecedent(np.arange(0, 13, 1), 'avg_sleep_time')
     calories_burnt = ctrl.Antecedent(np.arange(0, 3001, 1), 'calories_burnt')
@@ -286,7 +285,6 @@ def create_fuzzy_system(rules):
     return ctrl.ControlSystem(rules)
 
 def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
-    # Get calories burnt and avg sleep time from mongoDB
     # Get user_input from user_attributes
     user_preference = {"early": 3, "normal": 6, "late": 9}.get(user_input, 6)
 
