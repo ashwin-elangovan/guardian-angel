@@ -52,7 +52,7 @@ class TestWakeUpTimeEndpoint(unittest.TestCase):
         mock_optimal_wake_up_time.return_value = 420
         headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
 
-        response = self.app.get(f'/users/{self.user_id}/wake_up_time', headers=headers)
+        response = self.app.get(f'/users/{self.user_id}/wake_up_time?user_preference=normal', headers=headers)
 
         # Assertions
         self.assertEqual(response.status_code, 200)
@@ -65,7 +65,7 @@ class TestWakeUpTimeEndpoint(unittest.TestCase):
         mock_get_average_sleep_time.return_value = 7  # Mocking average sleep time in hours
         mock_get_average_calories_burnt.return_value = 2000  # Mocking average calories burnt per day
 
-        optimal_wake_up_time(self.user_id)
+        optimal_wake_up_time(self.user_id, 'normal')
 
         mock_get_average_sleep_time.assert_called_with(self.user_id)
         mock_get_average_calories_burnt.assert_called_with(self.user_id)
@@ -77,7 +77,7 @@ class TestWakeUpTimeEndpoint(unittest.TestCase):
         headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
 
         # Make a request with an invalid user_id
-        response = self.app.get('/users/invalid_user_id/wake_up_time', headers=headers)
+        response = self.app.get('/users/invalid_user_id/wake_up_time?user_preference=normal', headers=headers)
 
         # Assertions
         self.assertEqual(response.status_code, 400)
@@ -88,7 +88,7 @@ class TestWakeUpTimeEndpoint(unittest.TestCase):
         mock_optimal_wake_up_time.return_value = 420
 
         # Make a request without the X-Api-Auth header
-        response = self.app.get(f'/users/{self.user_id}/wake_up_time')
+        response = self.app.get(f'/users/{self.user_id}/wake_up_time?user_preference=normal')
 
         # Assertions
         self.assertEqual(response.status_code, 401)
@@ -100,7 +100,7 @@ class TestWakeUpTimeEndpoint(unittest.TestCase):
         headers = {'Content-Type': 'application/json', 'X-Api-Auth': 'invalid_key'}
 
         # Make a request with an invalid X-Api-Auth header
-        response = self.app.get(f'/users/{self.user_id}/wake_up_time', headers=headers)
+        response = self.app.get(f'/users/{self.user_id}/wake_up_time?user_preference=normal', headers=headers)
 
         # Assertions
         self.assertEqual(response.status_code, 401)

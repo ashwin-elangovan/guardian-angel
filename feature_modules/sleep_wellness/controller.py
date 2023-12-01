@@ -298,7 +298,7 @@ def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
 
     return int(wake_up_time_prediction.output['wake_up_time'])
 
-def optimal_wake_up_time(user_id):
+def optimal_wake_up_time(user_id, user_input):
     avg_sleep_time, calories_burnt, preference, wake_up_time = create_fuzzy_variables()
     define_fuzzy_sets(avg_sleep_time, calories_burnt, preference, wake_up_time)
 
@@ -307,7 +307,7 @@ def optimal_wake_up_time(user_id):
     wake_up_ctrl = create_fuzzy_system(rules)
     wake_up_time_prediction = ctrl.ControlSystemSimulation(wake_up_ctrl)
 
-    user_input = "normal"  # Mock data for now (Will be changed in Project 5)
+    # user_input = "normal"  # Mock data for now (Will be changed in Project 5)
     predicted_wake_up_time = predict_wake_up_time(user_id, user_input, wake_up_time_prediction)
 
     print("Predicted Wake-up Time in minutes:", predicted_wake_up_time)

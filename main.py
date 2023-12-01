@@ -242,7 +242,11 @@ def wake_up_time(user_id):
     except Exception as e:
         return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
-    return jsonify({'wake_up_time': optimal_wake_up_time(user_id)}), 200
+    user_preference = request.args.get('user_preference', 'normal')
+    if user_preference not in ('normal', 'early', 'late'):
+        return jsonify({'error': UserAttributeLocales.INVALID_USER_PREFERENCE}), 400
+
+    return jsonify({'wake_up_time': optimal_wake_up_time(user_id, user_preference)}), 200
 
 # Private functions
 
