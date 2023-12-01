@@ -95,6 +95,7 @@ class RestaurantFoodsTest(unittest.TestCase):
     @classmethod
     def tearDownClass(self):
         self.db.get_collection('Restaurant_Food').delete_many({})
+        self.db.get_collection('Restaurants').delete_many({})
 
     def test_get_foods_for_restaurant(self):
         restaurant_id = self.subway_id
