@@ -79,7 +79,7 @@ def analyseResult(result):
     elif (result < 60):
         return "Concerning. Please visit a doctor if you are unwell"
     elif (result < 70):
-        return "Slightly abnormal trends noticed. It's possible you might be working out. Consider visiting a doctor otherwise"
+        return "Slightly abnormal trends noticed. It's possible you might be working out or sleeping. Consider visiting a doctor otherwise"
     elif (result < 80):
         return "Normal"
     else:
