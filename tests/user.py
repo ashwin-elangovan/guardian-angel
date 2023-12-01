@@ -237,6 +237,8 @@ class UserAttributesTest(unittest.TestCase):
     def test_get_user_attributes_success_sleep_time(self):
         headers = {'X-Api-Auth': VERIFICATION_KEY}
         current_date = datetime.now(timezone.utc)
+        yesterday = current_date - timedelta(days=1)
+        current_date = yesterday.replace(hour=10, minute=0, second=0, microsecond=0)
         from_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
         to_date = current_date.replace(hour=23, minute=59, second=59, microsecond=999999)
 

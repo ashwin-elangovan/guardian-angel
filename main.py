@@ -235,7 +235,16 @@ def get_all_jobs():
 @app.route('/users/<string:user_id>/wake_up_time', methods=['GET'])
 @token_required
 def wake_up_time(user_id):
-    return jsonify({'wake_up_time': optimal_wake_up_time(user_id)}), 200
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+
+    user_preference = request.args.get('user_preference', 'normal')
+    if user_preference not in ('normal', 'early', 'late'):
+        return jsonify({'error': UserAttributeLocales.INVALID_USER_PREFERENCE}), 400
+
+    return jsonify({'wake_up_time': optimal_wake_up_time(user_id, user_preference)}), 200
 
 @app.route('/healthFuzzy', methods=['GET'])
 def get_health_update():

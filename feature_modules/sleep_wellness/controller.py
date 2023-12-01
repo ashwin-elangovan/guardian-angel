@@ -2,7 +2,6 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 from data_access.mongoData import mongoData
-# from main import app
 from flask import Flask, request, jsonify, json
 from flask_pymongo import PyMongo
 from datetime import datetime, timezone
@@ -290,7 +289,6 @@ def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
     user_preference = {"early": 3, "normal": 6, "late": 9}.get(user_input, 6)
 
     wake_up_time_prediction.input['preference'] = user_preference
-
     wake_up_time_prediction.input['avg_sleep_time'] = get_average_sleep_time(user_id)
     wake_up_time_prediction.input['calories_burnt'] = get_average_calories_burnt(user_id)
 
@@ -298,7 +296,7 @@ def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
 
     return int(wake_up_time_prediction.output['wake_up_time'])
 
-def optimal_wake_up_time(user_id):
+def optimal_wake_up_time(user_id, user_input):
     avg_sleep_time, calories_burnt, preference, wake_up_time = create_fuzzy_variables()
     define_fuzzy_sets(avg_sleep_time, calories_burnt, preference, wake_up_time)
 
@@ -307,12 +305,11 @@ def optimal_wake_up_time(user_id):
     wake_up_ctrl = create_fuzzy_system(rules)
     wake_up_time_prediction = ctrl.ControlSystemSimulation(wake_up_ctrl)
 
-    user_input = "normal"  # Mock data for now (Will be changed in Project 5)
+    # user_input = "normal"  # Mock data for now (Will be changed in Project 5)
     predicted_wake_up_time = predict_wake_up_time(user_id, user_input, wake_up_time_prediction)
 
     print("Predicted Wake-up Time in minutes:", predicted_wake_up_time)
     return predicted_wake_up_time
-
 
 def get_average_sleep_time(user_id):
     try:
@@ -374,5 +371,4 @@ def get_average_calories_burnt(user_id):
         return calories_burnt_per_day
     except Exception as e:
         print("Exception", e)
-
 
