@@ -14,6 +14,7 @@ class UserAttributeLocales:
     MISSING_REQUIRED_FIELD = 'Missing required field: {}'
     USER_ATTRIBUTES_ADDED_SUCCESSFULLY = 'User attributes added successfully'
     INVALID_USER_PREFERENCES = 'Invalid user preferences. Allowed values are: early, normal, late'
+    INVALID_EVENT_ID = 'Invalid event_id'
 
 class RestaurantFoodLocales:
     INVALID_RESTAURANT_ID_FORMAT = 'Invalid restaurant_id'

@@ -420,6 +420,252 @@ paths:
           description: 'Job deleted successfully'
         '400':
           description: 'Bad Request'
+  /users/{user_id}/events:
+    post:
+      summary: 'Create events for a user'
+      description: 'Endpoint to create events for a user'
+      tags:
+        - 'User Events'
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the user for whom events are created'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example: |
+              {
+                "events": [
+                  {
+                    "event_name": "Event 3",
+                    "event_description": "Description 3",
+                    "timestamp": "2023-12-31T12:00:00Z"
+                  },
+                  {
+                    "event_name": "Event 4",
+                    "event_description": "Description 4",
+                    "timestamp": "2023-12-31T15:30:00Z"
+                  }
+                ]
+              }
+      responses:
+        201:
+          description: 'Successful response'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Success message'
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    inserted_id:
+                      type: string
+                      description: 'ID of the inserted event'
+                    event_name:
+                      type: string
+                      description: 'Name of the inserted event'
+        400:
+          description: 'Bad request'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+        500:
+          description: 'Internal server error'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+    get:
+      summary: 'Get events for a user'
+      description: 'Endpoint to get events for a user'
+      tags:
+        - 'User Events'
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the user for whom events are retrieved'
+      responses:
+        200:
+          description: 'Successful response'
+          schema:
+            type: object
+            properties:
+              user_events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    event_description:
+                      type: string
+                      description: 'Description of the event'
+                    event_name:
+                      type: string
+                      description: 'Name of the event'
+                    id:
+                      type: string
+                      description: 'ID of the event'
+                    timestamp:
+                      type: string
+                      description: 'Timestamp of the event'
+                    user_id:
+                      type: string
+                      description: 'ID of the user'
+        400:
+          description: 'Bad request'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+        500:
+          description: 'Internal server error'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+    delete:
+      summary: 'Delete all events for a user'
+      description: 'Endpoint to delete all events for a user'
+      tags:
+        - 'User Events'
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the user for whom all events are deleted'
+      responses:
+        200:
+          description: 'Successful response'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Success message'
+        400:
+          description: 'Bad request'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+  /users/{user_id}/events/{event_id}:
+    get:
+      summary: 'Get a specific event for a user'
+      description: 'Endpoint to get a specific event for a user'
+      tags:
+        - 'User Events'
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the user for whom the event is retrieved'
+        - name: event_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the event to be retrieved'
+      responses:
+        200:
+          description: 'Successful response'
+          schema:
+            type: object
+            properties:
+              user_event:
+                type: object
+                properties:
+                  event_description:
+                    type: string
+                    description: 'Description of the event'
+                  event_name:
+                    type: string
+                    description: 'Name of the event'
+                  id:
+                    type: string
+                    description: 'ID of the event'
+                  timestamp:
+                    type: string
+                    description: 'Timestamp of the event'
+                  user_id:
+                    type: string
+                    description: 'ID of the user'
+        400:
+          description: 'Bad request'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+        404:
+          description: 'Event not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+    delete:
+      summary: 'Delete a specific event for a user'
+      description: 'Endpoint to delete a specific event for a user'
+      tags:
+        - 'User Events'
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the user for whom the event is deleted'
+        - name: event_id
+          in: path
+          type: string
+          required: true
+          description: 'ID of the event to be deleted'
+      responses:
+        200:
+          description: 'Successful response'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Success message'
+        400:
+          description: 'Bad request'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
+        404:
+          description: 'Event not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: 'Error message'
 
 securityDefinitions:
   ApiKeyAuth:

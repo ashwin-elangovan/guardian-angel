@@ -262,8 +262,129 @@ def get_health_update():
         print("Exception", e)
         return jsonify({'error': f'{"ERROR"}: {str(e)}'}), 500
 
-# Private functions
+@app.route('/users/<string:user_id>/events', methods=['GET'])
+@token_required
+def get_events(user_id):
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+    mongo = mongoData(app).mongo
+    user_events_collection = mongo.db.UserEvents
+    user_events = list(user_events_collection.find({'user_id': user_id}))
+    serialized_user_events = dumps({'user_events': user_events})
+    deserialized_user_events = json.loads(serialized_user_events)
 
+    for event in deserialized_user_events['user_events']:
+        event['id'] = event['_id']['$oid']
+        event['user_id'] = str(user_id)
+        event['timestamp'] = event['timestamp']['$date']
+        event.pop('_id', None)
+
+    return jsonify(deserialized_user_events), 200
+
+
+@app.route('/users/<string:user_id>/events/<string:event_id>', methods=['GET'])
+@token_required
+def get_event(user_id, event_id):
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+
+    mongo = mongoData(app).mongo
+    user_events_collection = mongo.db.UserEvents
+
+    user_event = user_events_collection.find_one({'user_id': user_id, '_id': ObjectId(event_id)})
+
+    if not user_event:
+        return jsonify({'error': 'Invalid event_id'}), 400
+
+    user_event['id'] = str(user_event['_id'])
+    user_event['user_id'] = str(user_event['user_id'])
+    user_event['timestamp'] = user_event['timestamp'].strftime("%Y-%m-%dT%H:%M:%SZ")
+    user_event.pop('_id', None)
+
+    serialized_user_event = dumps({'user_event': user_event})
+    deserialized_user_event = json.loads(serialized_user_event)
+
+    return jsonify(deserialized_user_event), 200
+
+
+@app.route('/users/<string:user_id>/events/<string:event_id>', methods=['DELETE'])
+@token_required
+def delete_event(user_id, event_id):
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': 'Invalid user_id format'}), 400
+
+    mongo = mongoData(app).mongo
+    user_events_collection = mongo.db.UserEvents
+
+    result = user_events_collection.delete_one({'user_id': user_id, '_id': ObjectId(event_id)})
+
+    if result.deleted_count == 0:
+        return jsonify({'error': 'Event not found'}), 404
+
+    return jsonify({'message': 'Event deleted successfully'}), 200
+
+@app.route('/users/<string:user_id>/events', methods=['DELETE'])
+@token_required
+def delete_all_events(user_id):
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': 'Invalid user_id format'}), 400
+
+    mongo = mongoData(app).mongo
+    user_events_collection = mongo.db.UserEvents
+    result = user_events_collection.delete_many({'user_id': user_id})
+
+    if result.deleted_count == 0:
+        return jsonify({'error': 'No events found for the user'}), 200
+
+    return jsonify({'message': 'All events deleted successfully'}), 200
+
+@app.route('/users/<string:user_id>/events', methods=['POST'])
+@token_required
+def create_events(user_id):
+    try:
+        user_id = ObjectId(user_id)
+    except Exception as e:
+        return jsonify({'error': 'Invalid user_id format'}), 400
+
+    mongo = mongoData(app).mongo
+    user_events_collection = mongo.db.UserEvents
+
+    try:
+        events = request.json.get('events')
+
+        if not events or not isinstance(events, list):
+            return jsonify({'error': 'Invalid request format. Missing or invalid "events" key.'}), 400
+
+        result = user_events_collection.insert_many([
+                    {
+                        'user_id': user_id,
+                        'event_name': event.get('event_name'),
+                        'event_description': event.get('event_description'),
+                        'timestamp': datetime.strptime(event.get('timestamp'), '%Y-%m-%dT%H:%M:%SZ')
+                    }
+                    for event in events
+                ])
+
+        inserted_ids = [str(inserted_id) for inserted_id in result.inserted_ids]
+        event_names = [event.get('event_name') for event in events]
+
+        response_data = [{'inserted_id': inserted_id, 'event_name': event_name} for inserted_id, event_name in zip(inserted_ids, event_names)]
+
+        return jsonify({'message': 'Events created successfully', 'events': response_data}), 201
+
+    except Exception as e:
+        return jsonify({'error': 'Error creating events', 'details': str(e)}), 500
+
+
+# Private functions
 def _calculate_sleep_time(sleep_entries):
     sleep_time_total = 0
 
