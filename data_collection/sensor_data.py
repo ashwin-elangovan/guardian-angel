@@ -21,30 +21,46 @@ def generate_mock_data(user_id):
     current_date = datetime.utcnow()
     timestamp = current_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
+    activity_meta_collection = mongo.db.ActivityMeta
+    query_result = activity_meta_collection.find()
+    activity_meta_result = {}
+    for result in query_result:
+        activity_meta_result[result['date_id']] = result
+
+    current_activity_meta = activity_meta_result[current_date.day]
+
     # Rule 1: Sleep mode from 10pm to 6am
-    s_sleep_time_rand = random.randrange(20, 24)
-    e_sleep_time_rand = random.randrange(4, 6)
+    # s_sleep_time_rand = random.randrange(20, 24)
+    # e_sleep_time_rand = random.randrange(4, 6)
 
-    s_random_minutes = random.randrange(0, 60)
-    e_random_minutes = random.randrange(0, 60)
+    # s_random_minutes = random.randrange(0, 60)
+    # e_random_minutes = random.randrange(0, 60)
 
-    sleep_start_time = datetime(current_date.year, current_date.month, current_date.day, s_sleep_time_rand, s_random_minutes)
-    sleep_end_time = datetime(current_date.year, current_date.month, current_date.day, e_sleep_time_rand, e_random_minutes)
-    sleep = 1 if sleep_start_time <= current_date or current_date <= sleep_end_time else 0
+    sleep_start_time = current_activity_meta['sleep_start_time']
+    sleep_end_time = current_activity_meta['sleep_end_time']
+
+    # sleep_start_time = datetime(current_date.year, current_date.month, current_date.day, s_sleep_time_rand, s_random_minutes)
+    # sleep_end_time = datetime(current_date.year, current_date.month, current_date.day, e_sleep_time_rand, e_random_minutes)
+    sleep = 1 if sleep_start_time.time() <= current_date.time() or current_date.time() <= sleep_end_time.time() else 0
 
     # Initialize blood_oxygen outside the Gym and Jogging block
     blood_oxygen = random.randint(95, 100)
 
     # Rule 2: Gym and Jogging activities
-    g_s_random_minutes = random.randrange(0, 60)
-    g_e_random_minutes = random.randrange(0, 60)
-    gym_start_time = datetime(current_date.year, current_date.month, current_date.day, 18, g_s_random_minutes)
-    gym_end_time = datetime(current_date.year, current_date.month, current_date.day, 19, g_e_random_minutes)
-    jogging_start_time = datetime(current_date.year, current_date.month, current_date.day, 7, g_s_random_minutes)
-    jogging_end_time = datetime(current_date.year, current_date.month, current_date.day, 8, g_e_random_minutes)
+    # g_s_random_minutes = random.randrange(0, 60)
+    # g_e_random_minutes = random.randrange(0, 60)
+    # gym_start_time = datetime(current_date.year, current_date.month, current_date.day, 18, g_s_random_minutes)
+    # gym_end_time = datetime(current_date.year, current_date.month, current_date.day, 19, g_e_random_minutes)
+    # jogging_start_time = datetime(current_date.year, current_date.month, current_date.day, 7, g_s_random_minutes)
+    # jogging_end_time = datetime(current_date.year, current_date.month, current_date.day, 8, g_e_random_minutes)
 
-    if (gym_start_time <= current_date <= gym_end_time) or \
-       (jogging_start_time <= current_date <= jogging_end_time):
+    gym_start_time = current_activity_meta['gym_start_time'].time()
+    gym_end_time = current_activity_meta['gym_end_time'].time()
+    jogging_start_time = current_activity_meta['jogging_start_time'].time()
+    jogging_end_time = current_activity_meta['jogging_end_time'].time()
+
+    if (gym_start_time <= current_date.time() <= gym_end_time) or \
+       (jogging_start_time <= current_date.time() <= jogging_end_time):
         # print("Setting gym and jogging data")
         heart_rate = random.randint(120, 160)
         respiratory_rate = random.randint(20, 30)
