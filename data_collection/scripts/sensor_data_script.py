@@ -203,7 +203,7 @@ def generate_mock_data(user_id):
         data['timestamp'] = datetime.fromisoformat(timestamp)
         print("Timestamp", data['timestamp'])
 
-        if user_attributes_collection.count_documents({'user_id': user_id, 'timestamp': data['timestamp']}) == 0:
+        if user_attributes_collection.count_documents({'user_id': ObjectId(user_id), 'timestamp': data['timestamp']}) == 0:
             result = user_attributes_collection.insert_one(data)
 
         insert_counter += 1

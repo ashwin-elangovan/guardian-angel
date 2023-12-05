@@ -78,7 +78,7 @@ def add_user_attributes(user_id):
 
         mongo = mongoData(app).mongo
         user_attributes_collection = mongo.db.UserAttributes
-        data['user_id'] = user_id
+        data['user_id'] = ObjectId(user_id)
         user_attributes_collection.insert_one(data)
         return jsonify({'message': UserAttributeLocales.USER_ATTRIBUTES_ADDED_SUCCESSFULLY}), 200
 
@@ -94,6 +94,7 @@ def get_user_attributes(user_id):
         if not ObjectId(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
+        user_id = ObjectId(user_id)
         mongo = mongoData(app).mongo
         keys = request.args.get('keys', '').split(',')
         from_time = request.args.get('from', '')
