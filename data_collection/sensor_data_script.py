@@ -25,9 +25,10 @@ class mongoData:
 
     def __get_mongo(self):
         if not self.app.config['TESTING']:
-            self.app.config['MONGO_URI'] = os.getenv('DB_URI')
+            # self.app.config['MONGO_URI'] = 'mongodb+srv://hkeerth1:EcMvR8LEBvmb72dG@cluster0.sdycyfj.mongodb.net/Guardian-Angel?retryWrites=true&w=majority'
+            # self.app.config['MONGO_URI'] = os.getenv('DB_URI')
             # Local DB
-            # self.app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
+            self.app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
         else:
             self.app.config['MONGO_URI'] = os.getenv('TEST_DB_URI')
 
@@ -74,8 +75,8 @@ def mock_data_helper(start_time, timestamp):
         # print("Setting gym and jogging data")
         heart_rate = random.randint(120, 160)
         respiratory_rate = random.randint(20, 30)
-        calories_burnt = random.randint(200, 400)
-        steps_count = random.randint(500, 1500)
+        calories_burnt = random.randint(90, 150)
+        steps_count = random.randint(200, 500)
     else:
         # Rule 3: Normal heart rate and respiratory rate during sleep
         if sleep:
@@ -83,7 +84,7 @@ def mock_data_helper(start_time, timestamp):
             heart_rate = random.randint(60, 80)
             respiratory_rate = random.randint(12, 18)
             steps_count = 0
-            calories_burnt = random.randint(50, 150)
+            calories_burnt = random.randint(10, 15)
         else:
             # Rule 10: During office hours
             office_start_time = datetime(current_date.year, current_date.month, current_date.day, 9, 0)
@@ -95,31 +96,31 @@ def mock_data_helper(start_time, timestamp):
                     print("Inside spikes")
                     heart_rate = random.randint(90, 120)
                     respiratory_rate = random.randint(18, 28)
-                    steps_count = random.randint(200, 500)
-                    calories_burnt = random.randint(50, 150)
+                    steps_count = random.randint(15, 30)
+                    calories_burnt = random.randint(10, 20)
                 else:
                     heart_rate = random.randint(70, 90)
                     respiratory_rate = random.randint(16, 22)
-                    steps_count = random.randint(500, 1500)
-                    calories_burnt = random.randint(150, 300)
+                    steps_count = random.randint(12, 25)
+                    calories_burnt = random.randint(8, 15)
             else:
                 # print("Setting normal data")
                 # Rule 11: Random spikes during stressful situations
                 if random.random() < 0.05:
                     heart_rate = random.randint(90, 120)
                     respiratory_rate = random.randint(18, 28)
-                    steps_count = random.randint(200, 500)
-                    calories_burnt = random.randint(100, 250)
+                    steps_count = random.randint(10, 20)
+                    calories_burnt = random.randint(10, 20)
                 else:
                     heart_rate = random.randint(70, 90)
                     respiratory_rate = random.randint(12, 14)
-                    steps_count = random.randint(200, 500)
-                    calories_burnt = random.randint(50, 150)
+                    steps_count = random.randint(8, 15)
+                    calories_burnt = random.randint(8, 15)
 
     # Rule 12: Blood oxygen may drop slightly during intense activities
     # Rule 13: Steps count may vary based on daily routines
     blood_oxygen = random.randint(92, 98) if sleep else random.randint(95, 100)
-    steps_count += random.randint(10, 500)
+    # steps_count += random.randint(10, 500)
 
     data = {
         "heart_rate": heart_rate,
@@ -149,7 +150,7 @@ def generate_mock_data(user_id):
     current_date = datetime.utcnow()
 
     # Set the start time 2 days earlier from the beginning of the day
-    start_time = datetime(current_date.year, current_date.month, current_date.day, 0, 0) - timedelta(days=2)
+    start_time = datetime(current_date.year, current_date.month, current_date.day, 0, 0) - timedelta(days=10)
 
     insert_counter = 0
 

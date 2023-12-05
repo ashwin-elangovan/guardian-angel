@@ -88,7 +88,6 @@ def add_user_attributes(user_id):
 @app.route('/users/<string:user_id>/user_attributes', methods=['GET'])
 @token_required
 def get_user_attributes(user_id):
-    print("Entry point")
     try:
         if not ObjectId(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
@@ -97,13 +96,23 @@ def get_user_attributes(user_id):
         keys = request.args.get('keys', '').split(',')
         from_time = request.args.get('from', '')
         to_time = request.args.get('to', '')
+        filter_type = request.args.get('filter', '')
 
         if from_time == '' or to_time == '':
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
 
         from_time, to_time = _parse_timestamps(from_time, to_time)
+
         if not all(key in USER_ATTRIBUTE_FETCH_KEYS for key in keys):
             return jsonify({'error': UserAttributeLocales.INVALID_KEYS}), 400
+
+        if filter_type == 'week':
+            if (to_time - from_time).days != 6:
+                return jsonify({'error': 'Invalid date range for week filter. It should be exactly 7 days.'}), 400
+
+            from_time = from_time.replace(hour=0, minute=0, second=0, microsecond=0)
+            to_time = to_time.replace(hour=23, minute=59, second=59, microsecond=999999)
+
         query_filter = {
             'user_id': user_id,
             'timestamp': {'$gte': from_time, '$lte': to_time}
@@ -112,22 +121,13 @@ def get_user_attributes(user_id):
         projection['_id'] = 0
         projection['timestamp'] = 1
         user_attributes_collection = mongo.db.User_attributes
-        results = user_attributes_collection.find(query_filter, projection)
+        results = user_attributes_collection.find(query_filter, projection).sort('timestamp', 1)
         db_entries = [result for result in results]
-        # print("DB entries", db_entries)
-        keys_to_average = [key for key in keys if key not in ('sleep', 'steps_count', 'calories_burnt')]
-        final_values = {}
-        if keys_to_average:
-            final_values = _calculate_average_values(keys_to_average, db_entries)
 
-        if 'sleep' in keys:
-            final_values['sleep_time'] = _calculate_sleep_time(db_entries)
-
-        if 'steps_count' in keys:
-            final_values['total_steps_count'] = sum(entry['steps_count'] for entry in db_entries)
-
-        if 'calories_burnt' in keys:
-            final_values['total_calories_burnt'] = sum(entry['calories_burnt'] for entry in db_entries)
+        if filter_type == 'week':
+            final_values = _average_values_per_week(keys, db_entries)
+        else:
+            final_values = _average_values(keys, db_entries)
 
         return jsonify(final_values), 200
 
@@ -385,13 +385,75 @@ def create_events(user_id):
 
 
 # Private functions
-def _calculate_sleep_time(sleep_entries):
+
+def _average_values_per_week(keys, db_entries):
+    try:
+        print("DB entries", db_entries)
+        daily_values = {}
+
+        for entry in db_entries:
+            timestamp = entry['timestamp'].date()
+            if timestamp not in daily_values:
+                daily_values[timestamp] = {f'{key}': [] for key in keys}
+
+            for key in keys:
+                if key in entry:
+                    daily_values[timestamp][f'{key}'].append({"value": entry[key], "timestamp": entry['timestamp']})
+
+        result = []
+        print(daily_values)
+        # Modify the below logic
+        for date, values in daily_values.items():
+            daily_result = {str(date): {}}
+            for key, value_list in values.items():
+                if key in ('blood_oxygen', 'heart_rate', 'respiratory_rate'):
+                    daily_result[str(date)][f'average_{key}'] = int(sum(entry['value'] for entry in value_list) / len(value_list)) if value_list else None
+                else:
+                    if key == 'sleep':
+                        daily_result[str(date)]['sleep_time'] = _calculate_sleep_time('value', value_list)
+                    elif key == 'steps_count':
+                        daily_result[str(date)]['total_steps_count'] = sum(entry['value'] for entry in value_list)
+                    elif key == 'calories_burnt':
+                        daily_result[str(date)]['total_calories_burnt'] = sum(entry['value'] for entry in value_list)
+            result.append(daily_result)
+
+        return result
+    except Exception as e:
+        exception_type = type(e).__name__
+        print(f"Exception Type: {exception_type}")
+        print(f"Exception Message: {str(e)}")
+
+        # If you want to include the traceback
+        import traceback
+        traceback_info = traceback.format_exc()
+        print(f"Traceback:\n{traceback_info}")
+
+
+
+def _average_values(keys, db_entries):
+    keys_to_average = [key for key in keys if key in ('blood_oxygen', 'heart_rate', 'respiratory_rate')]
+    final_values = {}
+    if keys_to_average:
+        final_values = _calculate_average_values(keys_to_average, db_entries)
+
+    if 'sleep' in keys:
+        final_values['sleep_time'] = _calculate_sleep_time('sleep', db_entries)
+
+    if 'steps_count' in keys:
+        final_values['total_steps_count'] = sum(entry['steps_count'] for entry in db_entries)
+
+    if 'calories_burnt' in keys:
+        final_values['total_calories_burnt'] = sum(entry['calories_burnt'] for entry in db_entries)
+
+    return final_values
+
+def _calculate_sleep_time(key, sleep_entries):
     sleep_time_total = 0
 
     sorted_sleep_entries = sorted(sleep_entries, key=lambda x: x['timestamp'])
 
     for i in range(1, len(sorted_sleep_entries)):
-        if sorted_sleep_entries[i]['sleep'] == 0:
+        if sorted_sleep_entries[i][key] == 0:
             continue
         sleep_start = sorted_sleep_entries[i - 1]['timestamp']
         sleep_end = sorted_sleep_entries[i]['timestamp']

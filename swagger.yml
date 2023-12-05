@@ -100,60 +100,65 @@ paths:
   /users/{user_id}/user_attributes:
     get:
       tags:
-        - User Attributes
+        - 'User Attributes'
       parameters:
         - name: user_id
           in: path
           type: string
           required: true
-          description: The ID of the user.
+          description: 'The ID of the user.'
         - name: keys
           in: query
           required: true
           type: string
           collectionFormat: multi
-          description: List of keys to fetch (e.g., heart_rate,respiratory_rate,steps_count,calories_burnt,blood_oxygen,sleep). Separate multiple values with commas.
+          description: 'List of keys to fetch (e.g., heart_rate,respiratory_rate,steps_count,calories_burnt,blood_oxygen,sleep). Separate multiple values with commas.'
         - name: from
           in: query
           type: string
           format: date-time
-          description: Start timestamp for the query in ISO 8601 format (e.g., 2023-11-01T00:00:00Z).
+          description: 'Start timestamp for the query in ISO 8601 format (e.g., 2023-11-01T00:00:00Z).'
         - name: to
           in: query
           type: string
           format: date-time
-          description: End timestamp for the query in ISO 8601 format (e.g., 2023-12-01T23:59:59Z).
+          description: 'End timestamp for the query in ISO 8601 format (e.g., 2023-12-01T23:59:59Z).'
+        - name: filter
+          in: query
+          type: string
+          enum: ['week']
+          description: 'Filter option to get weekly averages.'
       responses:
         200:
-          description: Successful response
+          description: 'Successful response'
           schema:
             type: object
             properties:
               average_heart_rate:
                 type: number
-                description: Average heart rate.
+                description: 'Average heart rate.'
               average_respiratory_rate:
                 type: number
-                description: Average respiratory rate.
+                description: 'Average respiratory rate.'
               average_steps_count:
                 type: number
-                description: Average steps count.
+                description: 'Average steps count.'
         400:
-          description: Invalid user_id format or invalid keys
+          description: 'Invalid user_id format or invalid keys'
           schema:
             type: object
             properties:
               error:
                 type: string
-                description: Error message.
+                description: 'Error message.'
         500:
-          description: Internal server error
+          description: 'Internal server error'
           schema:
             type: object
             properties:
               error:
                 type: string
-                description: Error message.
+                description: 'Error message.'
 
     post:
       tags:
