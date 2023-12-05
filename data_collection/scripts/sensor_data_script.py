@@ -1,7 +1,7 @@
 # This file mocks sensor data for a user
 
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from bson import ObjectId
 # from data_access.mongoData import mongoData
 from flask_pymongo import PyMongo
@@ -25,10 +25,10 @@ class mongoData:
 
     def __get_mongo(self):
         if not self.app.config['TESTING']:
-            # self.app.config['MONGO_URI'] = 'mongodb+srv://hkeerth1:EcMvR8LEBvmb72dG@cluster0.sdycyfj.mongodb.net/Guardian-Angel?retryWrites=true&w=majority'
+            self.app.config['MONGO_URI'] = 'mongodb+srv://hkeerth1:EcMvR8LEBvmb72dG@cluster0.sdycyfj.mongodb.net/Guardian-Angel?retryWrites=true&w=majority'
             # self.app.config['MONGO_URI'] = os.getenv('DB_URI')
             # Local DB
-            self.app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
+            # self.app.config['MONGO_URI'] = 'mongodb://127.0.0.1:27017/GuardianAngel?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'
         else:
             self.app.config['MONGO_URI'] = os.getenv('TEST_DB_URI')
 
@@ -45,7 +45,7 @@ class mongoData:
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
-def mock_data_helper(start_time, timestamp):
+def mock_data_helper(start_time, timestamp, current_activity_meta):
 
     heart_rate = 0
     respiratory_rate = 0
@@ -54,25 +54,40 @@ def mock_data_helper(start_time, timestamp):
 
     current_date = start_time
 
-    # Rule 1: Sleep mode from 10pm to 6am
-    s_sleep_time_rand = random.randrange(21, 24)
-    sleep_start_time = datetime(current_date.year, current_date.month, current_date.day, s_sleep_time_rand, 0)
-    e_sleep_time_rand = random.randrange(4, 6)
-    sleep_end_time = datetime(current_date.year, current_date.month, current_date.day, e_sleep_time_rand, 0)
-    sleep = 1 if sleep_start_time <= current_date or current_date <= sleep_end_time else 0
+    # Rule 1: Sleep mode
+    # s_sleep_time_rand = random.randrange(20, 24)
+    # e_sleep_time_rand = random.randrange(4, 6)
+
+    # s_random_minutes = random.randrange(0, 60)
+    # e_random_minutes = random.randrange(0, 60)
+
+    # sleep_start_time = datetime(current_date.year, current_date.month, current_date.day, s_sleep_time_rand, s_random_minutes)
+    # sleep_end_time = datetime(current_date.year, current_date.month, current_date.day, e_sleep_time_rand, e_random_minutes)
+    sleep_start_time = current_activity_meta['sleep_start_time']
+    sleep_end_time = current_activity_meta['sleep_end_time']
+    # print("sleep_start_time", sleep_start_time.time())
+    # print("sleep_end_time", sleep_end_time.time())
+    # print("current_date", current_date.time())
+    sleep = 1 if sleep_start_time.time() <= current_date.time() or current_date.time() <= sleep_end_time.time() else 0
 
     # Initialize blood_oxygen outside the Gym and Jogging block
     blood_oxygen = random.randint(95, 100)
 
     # Rule 2: Gym and Jogging activities
-    gym_start_time = datetime(current_date.year, current_date.month, current_date.day, 18, 0)
-    gym_end_time = datetime(current_date.year, current_date.month, current_date.day, 19, 0)
-    jogging_start_time = datetime(current_date.year, current_date.month, current_date.day, 7, 0)
-    jogging_end_time = datetime(current_date.year, current_date.month, current_date.day, 8, 0)
+    # g_s_random_minutes = random.randrange(0, 60)
+    # g_e_random_minutes = random.randrange(0, 60)
+    # gym_start_time = datetime(current_date.year, current_date.month, current_date.day, 18, g_s_random_minutes)
+    # gym_end_time = datetime(current_date.year, current_date.month, current_date.day, 19, g_e_random_minutes)
+    # jogging_start_time = datetime(current_date.year, current_date.month, current_date.day, 7, g_s_random_minutes)
+    # jogging_end_time = datetime(current_date.year, current_date.month, current_date.day, 8, g_e_random_minutes)
+    gym_start_time = current_activity_meta['gym_start_time'].time()
+    gym_end_time = current_activity_meta['gym_end_time'].time()
+    jogging_start_time = current_activity_meta['jogging_start_time'].time()
+    jogging_end_time = current_activity_meta['jogging_end_time'].time()
 
-    if (gym_start_time <= current_date <= gym_end_time) or \
-       (jogging_start_time <= current_date <= jogging_end_time):
-        # print("Setting gym and jogging data")
+    if (gym_start_time <= current_date.time() <= gym_end_time) or \
+       (jogging_start_time <= current_date.time() <= jogging_end_time):
+        print("Setting gym and jogging data")
         heart_rate = random.randint(120, 160)
         respiratory_rate = random.randint(20, 30)
         calories_burnt = random.randint(90, 150)
@@ -133,7 +148,7 @@ def mock_data_helper(start_time, timestamp):
 
     return data
     # mongo = mongoData(app).mongo
-    # user_attributes_collection = mongo.db.User_attributes
+    # user_attributes_collection = mongo.db.UserAttributes
     # data['user_id'] = user_id
     # data['timestamp'] = timestamp
     # result = user_attributes_collection.insert_one(data)
@@ -144,13 +159,20 @@ def generate_mock_data(user_id):
         return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
 
     mongo = mongoData(app).mongo
-    user_attributes_collection = mongo.db.User_attributes
+    user_attributes_collection = mongo.db.UserAttributes
+    activity_meta_collection = mongo.db.ActivityMeta
+    query_result = activity_meta_collection.find()
+    activity_meta_result = {}
+    for result in query_result:
+        activity_meta_result[result['date_id']] = result
+
 
     # Get the current date and time
     current_date = datetime.utcnow()
 
     # Set the start time 2 days earlier from the beginning of the day
     start_time = datetime(current_date.year, current_date.month, current_date.day, 0, 0) - timedelta(days=10)
+    # start_time = datetime(current_date.year, 12, 5, 4, 0)
 
     insert_counter = 0
 
@@ -159,7 +181,9 @@ def generate_mock_data(user_id):
         # Format the timestamp for insertion
         timestamp = start_time.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-        data = mock_data_helper(start_time, timestamp)
+        current_activity_meta = activity_meta_result[start_time.day]
+
+        data = mock_data_helper(start_time, timestamp, current_activity_meta)
 
         # Insert data into the database
         # data = {
@@ -174,7 +198,7 @@ def generate_mock_data(user_id):
         # }
 
         mongo = mongoData(app).mongo
-        user_attributes_collection = mongo.db.User_attributes
+        user_attributes_collection = mongo.db.UserAttributes
         data['user_id'] = user_id
         data['timestamp'] = datetime.fromisoformat(timestamp)
         # result = user_attributes_collection.insert_one(data)

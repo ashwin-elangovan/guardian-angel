@@ -123,11 +123,11 @@ paths:
           type: string
           format: date-time
           description: 'End timestamp for the query in ISO 8601 format (e.g., 2023-12-01T23:59:59Z).'
-        - name: filter
+        - name: group_by
           in: query
           type: string
-          enum: ['week']
-          description: 'Filter option to get weekly averages.'
+          enum: ['hour', 'day']
+          description: 'Filter option to get daily/hourly averages.'
       responses:
         200:
           description: 'Successful response'

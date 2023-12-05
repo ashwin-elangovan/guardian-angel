@@ -90,11 +90,11 @@ class RestaurantFoodsTest(unittest.TestCase):
                 "calories": 950
             }
         ]
-        self.db.Restaurant_Food.insert_many(mock_data)
+        self.db.RestaurantFood.insert_many(mock_data)
 
     @classmethod
     def tearDownClass(self):
-        self.db.get_collection('Restaurant_Food').delete_many({})
+        self.db.get_collection('RestaurantFood').delete_many({})
         self.db.get_collection('Restaurants').delete_many({})
 
     def test_get_foods_for_restaurant(self):

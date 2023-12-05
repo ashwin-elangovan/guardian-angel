@@ -17,6 +17,7 @@ from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_j
 from feature_modules.sleep_wellness.controller import optimal_wake_up_time
 from feature_modules.health_fuzzy_impl import health_monitoring_system
 from datetime import datetime, timezone
+from data_processing.user_attributes import _parse_timestamps, _average_values, _average_values_per_day, _average_values_per_hour
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -76,7 +77,7 @@ def add_user_attributes(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
 
         mongo = mongoData(app).mongo
-        user_attributes_collection = mongo.db.User_attributes
+        user_attributes_collection = mongo.db.UserAttributes
         data['user_id'] = user_id
         user_attributes_collection.insert_one(data)
         return jsonify({'message': UserAttributeLocales.USER_ATTRIBUTES_ADDED_SUCCESSFULLY}), 200
@@ -87,6 +88,7 @@ def add_user_attributes(user_id):
 # User Attributes GET API
 @app.route('/users/<string:user_id>/user_attributes', methods=['GET'])
 @token_required
+# group_by can be 'day' or 'hour'
 def get_user_attributes(user_id):
     try:
         if not ObjectId(user_id):
@@ -96,7 +98,7 @@ def get_user_attributes(user_id):
         keys = request.args.get('keys', '').split(',')
         from_time = request.args.get('from', '')
         to_time = request.args.get('to', '')
-        filter_type = request.args.get('filter', '')
+        filter_type = request.args.get('group_by', '')
 
         if from_time == '' or to_time == '':
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
@@ -106,12 +108,14 @@ def get_user_attributes(user_id):
         if not all(key in USER_ATTRIBUTE_FETCH_KEYS for key in keys):
             return jsonify({'error': UserAttributeLocales.INVALID_KEYS}), 400
 
-        if filter_type == 'week':
-            if (to_time - from_time).days != 6:
-                return jsonify({'error': 'Invalid date range for week filter. It should be exactly 7 days.'}), 400
+        if filter_type == 'day' and (to_time - from_time).days > 10:
+                return jsonify({'error': 'Date range is too long. Try a shorter one'}), 400
 
-            from_time = from_time.replace(hour=0, minute=0, second=0, microsecond=0)
-            to_time = to_time.replace(hour=23, minute=59, second=59, microsecond=999999)
+        if filter_type == 'hour' and (to_time - from_time).days > 3:
+                return jsonify({'error': 'Date range is too long. Try a shorter one'}), 400
+
+        # from_time = from_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        # to_time = to_time.replace(hour=23, minute=59, second=59, microsecond=999999)
 
         query_filter = {
             'user_id': user_id,
@@ -120,12 +124,14 @@ def get_user_attributes(user_id):
         projection = {key: 1 for key in keys}
         projection['_id'] = 0
         projection['timestamp'] = 1
-        user_attributes_collection = mongo.db.User_attributes
+        user_attributes_collection = mongo.db.UserAttributes
         results = user_attributes_collection.find(query_filter, projection).sort('timestamp', 1)
         db_entries = [result for result in results]
 
-        if filter_type == 'week':
-            final_values = _average_values_per_week(keys, db_entries)
+        if filter_type == 'day':
+            final_values = _average_values(keys, db_entries, group_by='day')
+        elif filter_type == 'hour':
+            final_values = _average_values(keys, db_entries, group_by='hour')
         else:
             final_values = _average_values(keys, db_entries)
 
@@ -159,7 +165,7 @@ def get_restaurants():
 def get_foods_for_restaurant(restaurant_id):
     try:
         mongo = mongoData(app).mongo
-        restaurant_food_collection = mongo.db.Restaurant_Food
+        restaurant_food_collection = mongo.db.RestaurantFood
 
         # if not restaurant_id.isdigit():
         #     return jsonify({'error': RestaurantFoodLocales.INVALID_RESTAURANT_ID_FORMAT}), 400
@@ -386,107 +392,7 @@ def create_events(user_id):
 
 # Private functions
 
-def _average_values_per_week(keys, db_entries):
-    try:
-        print("DB entries", db_entries)
-        daily_values = {}
 
-        for entry in db_entries:
-            timestamp = entry['timestamp'].date()
-            if timestamp not in daily_values:
-                daily_values[timestamp] = {f'{key}': [] for key in keys}
-
-            for key in keys:
-                if key in entry:
-                    daily_values[timestamp][f'{key}'].append({"value": entry[key], "timestamp": entry['timestamp']})
-
-        result = []
-        print(daily_values)
-        # Modify the below logic
-        for date, values in daily_values.items():
-            daily_result = {str(date): {}}
-            for key, value_list in values.items():
-                if key in ('blood_oxygen', 'heart_rate', 'respiratory_rate'):
-                    daily_result[str(date)][f'average_{key}'] = int(sum(entry['value'] for entry in value_list) / len(value_list)) if value_list else None
-                else:
-                    if key == 'sleep':
-                        daily_result[str(date)]['sleep_time'] = _calculate_sleep_time('value', value_list)
-                    elif key == 'steps_count':
-                        daily_result[str(date)]['total_steps_count'] = sum(entry['value'] for entry in value_list)
-                    elif key == 'calories_burnt':
-                        daily_result[str(date)]['total_calories_burnt'] = sum(entry['value'] for entry in value_list)
-            result.append(daily_result)
-
-        return result
-    except Exception as e:
-        exception_type = type(e).__name__
-        print(f"Exception Type: {exception_type}")
-        print(f"Exception Message: {str(e)}")
-
-        # If you want to include the traceback
-        import traceback
-        traceback_info = traceback.format_exc()
-        print(f"Traceback:\n{traceback_info}")
-
-
-
-def _average_values(keys, db_entries):
-    keys_to_average = [key for key in keys if key in ('blood_oxygen', 'heart_rate', 'respiratory_rate')]
-    final_values = {}
-    if keys_to_average:
-        final_values = _calculate_average_values(keys_to_average, db_entries)
-
-    if 'sleep' in keys:
-        final_values['sleep_time'] = _calculate_sleep_time('sleep', db_entries)
-
-    if 'steps_count' in keys:
-        final_values['total_steps_count'] = sum(entry['steps_count'] for entry in db_entries)
-
-    if 'calories_burnt' in keys:
-        final_values['total_calories_burnt'] = sum(entry['calories_burnt'] for entry in db_entries)
-
-    return final_values
-
-def _calculate_sleep_time(key, sleep_entries):
-    sleep_time_total = 0
-
-    sorted_sleep_entries = sorted(sleep_entries, key=lambda x: x['timestamp'])
-
-    for i in range(1, len(sorted_sleep_entries)):
-        if sorted_sleep_entries[i][key] == 0:
-            continue
-        sleep_start = sorted_sleep_entries[i - 1]['timestamp']
-        sleep_end = sorted_sleep_entries[i]['timestamp']
-        sleep_duration = sleep_end - sleep_start
-        sleep_time_total += sleep_duration.total_seconds()
-
-    return sleep_time_total
-
-def _parse_timestamps(from_time, to_time):
-    try:
-        from_time = datetime.strptime(from_time, "%Y-%m-%dT%H:%M:%SZ") if from_time else None
-        to_time = datetime.strptime(to_time, "%Y-%m-%dT%H:%M:%SZ") if to_time else None
-    except ValueError:
-        return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
-    return from_time, to_time
-
-def _calculate_average_values(keys, results):
-    average_values = {f'average_{key}': 0 for key in keys}
-    count_values = {f'average_{key}': 0 for key in keys}
-
-    for result in results:
-        for key in keys:
-            average_key = f'average_{key}'
-            if key in result:
-                average_values[average_key] += result[key]
-                count_values[average_key] += 1
-
-    for key in keys:
-        average_key = f'average_{key}'
-        if count_values[average_key] > 0:
-            average_values[average_key] /= count_values[average_key]
-
-    return average_values
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)

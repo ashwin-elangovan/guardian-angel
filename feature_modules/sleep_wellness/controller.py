@@ -324,7 +324,7 @@ def get_average_sleep_time(user_id):
         projection = {key: 1 for key in keys}
         projection['_id'] = 0
         projection['timestamp'] = 1
-        user_attributes_collection = mongo.db.User_attributes
+        user_attributes_collection = mongo.db.UserAttributes
         results = user_attributes_collection.find(query_filter, projection)
         db_entries = [result for result in results]
         final_values = {}
@@ -364,7 +364,7 @@ def get_average_calories_burnt(user_id):
         projection = {key: 1 for key in keys}
         projection['_id'] = 0
         projection['timestamp'] = 1
-        user_attributes_collection = mongo.db.User_attributes
+        user_attributes_collection = mongo.db.UserAttributes
         results = user_attributes_collection.find(query_filter, projection)
         db_entries = [result for result in results]
         calories_burnt_per_day = sum(entry['calories_burnt'] for entry in db_entries)

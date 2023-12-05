@@ -108,7 +108,7 @@ class UserAttributesTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        self.db.get_collection('User_attributes').delete_many({})
+        self.db.get_collection('UserAttributes').delete_many({})
         self.db.get_collection('User').delete_many({})
 
     def test_add_user_attributes_success(self):
@@ -131,7 +131,7 @@ class UserAttributesTest(unittest.TestCase):
         self.assertIn('message', result)
         self.assertEqual(result['message'], UserAttributeLocales.USER_ATTRIBUTES_ADDED_SUCCESSFULLY)
 
-        inserted_data = self.db.User_attributes.find_one({'user_id': user_id})
+        inserted_data = self.db.UserAttributes.find_one({'user_id': user_id})
         self.assertIsNotNone(inserted_data)
         self.assertEqual(inserted_data['heart_rate'], 65)
         self.assertEqual(inserted_data['respiratory_rate'], 13)
@@ -210,7 +210,7 @@ class UserAttributesTest(unittest.TestCase):
             }
         ]
 
-        user_attributes_collection = self.db.User_attributes
+        user_attributes_collection = self.db.UserAttributes
         user_attributes_collection.insert_many(mock_data)
 
         response = self.app.get(f'/users/{self.user_id}/user_attributes?keys=heart_rate,respiratory_rate,steps_count,calories_burnt,blood_oxygen&from={from_date_str}&to={to_date_str}', headers=headers)
@@ -261,7 +261,7 @@ class UserAttributesTest(unittest.TestCase):
             {'user_id': self.user_id, 'sleep': 1, 'timestamp': current_date},
         ]
 
-        user_attributes_collection = self.db.User_attributes
+        user_attributes_collection = self.db.UserAttributes
         user_attributes_collection.insert_many(mock_data)
 
         response = self.app.get(f'/users/{self.user_id}/user_attributes?keys=sleep&from={from_date_str}&to={to_date_str}', headers=headers)
