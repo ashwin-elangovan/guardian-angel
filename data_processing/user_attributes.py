@@ -12,6 +12,7 @@ from locales import UserAttributeLocales
 from datetime import datetime, timedelta
 
 def _average_values_per_day(keys, db_entries):
+    # print("DB entries", db_entries)
     try:
         daily_values = {}
 
@@ -30,7 +31,20 @@ def _average_values_per_day(keys, db_entries):
             daily_result = {str(date): {}}
             temp_result = _temp_calculation(daily_result, keys, values, str(date))
             result.append(temp_result)
+
         return result
+        # Planning to give trauma to the users :)
+        # post_result = []
+        # for res in result:
+        #     temp_post_result = {}
+        #     for date, metrics in res.items():
+        #         temp_post_result = {
+        #             "date": date,
+        #             "metrics": metrics
+        #         }
+        #     post_result.append(temp_post_result)
+        # return post_result
+
     except Exception as e:
         exception_type = type(e).__name__
         print(f"Exception Type: {exception_type}")
@@ -82,6 +96,23 @@ def _average_values_per_hour(keys, db_entries):
             result.append(date_result)
 
         return result
+        # Planning to give trauma to the users :)
+        # post_result = []
+        # for day_data in result:
+        #     day_data_hash = {}
+        #     print("Day Data", day_data)
+        #     for date, hourly_metrics in day_data.items():
+        #         day_data_hash['date'] = date
+        #         day_data_hash['data'] = []
+        #         for hour, metrics in hourly_metrics.items():
+        #             hourly_value_hash = {}
+        #             hourly_value_hash['hour'] = hour
+        #             hourly_value_hash['metrics'] = metrics
+        #             day_data_hash['data'].append(hourly_value_hash)
+
+        #     post_result.append(day_data_hash)
+        # return post_result
+
     except Exception as e:
         exception_type = type(e).__name__
         print(f"Exception Type: {exception_type}")
