@@ -19,6 +19,7 @@ def generate_mock_data(user_id):
     steps_count = 0
 
     current_date = datetime.utcnow()
+    mongo = mongoData(app).mongo
     timestamp = current_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
     activity_meta_collection = mongo.db.ActivityMeta
@@ -118,7 +119,7 @@ def generate_mock_data(user_id):
         "calories_burnt": calories_burnt,
         "sleep": sleep
     }
-    mongo = mongoData(app).mongo
+
     user_attributes_collection = mongo.db.UserAttributes
     data['user_id'] = user_id
     data['timestamp'] = timestamp
