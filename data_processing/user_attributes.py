@@ -11,22 +11,8 @@ import traceback
 from locales import UserAttributeLocales
 from datetime import datetime, timedelta
 
-def _average_values(keys, db_entries, group_by='day'):
-    print("Inside _average_values")
-    if group_by == 'day':
-        print("Inside day")
-        return _average_values_per_day(keys, db_entries)
-    elif group_by == 'hour':
-        print("Inside hour")
-        return _average_values_per_hour(keys, db_entries)
-    else:
-        return _average_values_custom(keys, db_entries)
-
-
 def _average_values_per_day(keys, db_entries):
-    print("Inside DB entries", db_entries)
     try:
-        print("Inside DB entries", db_entries)
         daily_values = {}
 
         for entry in db_entries:
@@ -39,7 +25,7 @@ def _average_values_per_day(keys, db_entries):
                     daily_values[timestamp][f'{key}'].append({"value": entry[key], "timestamp": entry['timestamp']})
 
         result = []
-        print(daily_values)
+        # print(daily_values)
         for date, values in daily_values.items():
             daily_result = {str(date): {}}
             temp_result = _temp_calculation(daily_result, keys, values, str(date))
@@ -110,7 +96,6 @@ def _temp_calculation(val_arr, keys, db_entries, factor):
             val_arr[factor][f'average_{key}'] = int(sum(entry['value'] for entry in value_list) / len(value_list)) if value_list else None
         else:
             if key == 'sleep':
-                print("Factor", factor, "Value List", value_list)
                 val_arr[factor]['sleep_time'] = _calculate_sleep_time('value', value_list)
             elif key == 'steps_count':
                 val_arr[factor]['total_steps_count'] = sum(entry['value'] for entry in value_list)

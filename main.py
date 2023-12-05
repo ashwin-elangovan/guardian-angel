@@ -17,7 +17,7 @@ from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_j
 from feature_modules.sleep_wellness.controller import optimal_wake_up_time
 from feature_modules.health_fuzzy_impl import health_monitoring_system
 from datetime import datetime, timezone
-from data_processing.user_attributes import _parse_timestamps, _average_values, _average_values_per_day, _average_values_per_hour
+from data_processing.user_attributes import _parse_timestamps, _average_values_custom, _average_values_per_day, _average_values_per_hour
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -129,11 +129,11 @@ def get_user_attributes(user_id):
         db_entries = [result for result in results]
 
         if filter_type == 'day':
-            final_values = _average_values(keys, db_entries, group_by='day')
+            final_values = _average_values_per_day(keys, db_entries)
         elif filter_type == 'hour':
-            final_values = _average_values(keys, db_entries, group_by='hour')
+            final_values = _average_values_per_hour(keys, db_entries)
         else:
-            final_values = _average_values(keys, db_entries)
+            final_values = _average_values_custom(keys, db_entries)
 
         return jsonify(final_values), 200
 
