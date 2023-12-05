@@ -166,13 +166,13 @@ def generate_mock_data(user_id):
     for result in query_result:
         activity_meta_result[result['date_id']] = result
 
-
+    result = []
     # Get the current date and time
     current_date = datetime.utcnow()
 
     # Set the start time 2 days earlier from the beginning of the day
-    start_time = datetime(current_date.year, current_date.month, current_date.day, 0, 0) - timedelta(days=10)
-    # start_time = datetime(current_date.year, 12, 5, 4, 0)
+    # start_time = datetime(current_date.year, current_date.month, current_date.day, 0, 0) - timedelta(days=10)
+    start_time = datetime(current_date.year, 12, 5, 17, 40)
 
     insert_counter = 0
 
@@ -201,9 +201,10 @@ def generate_mock_data(user_id):
         user_attributes_collection = mongo.db.UserAttributes
         data['user_id'] = user_id
         data['timestamp'] = datetime.fromisoformat(timestamp)
-        # result = user_attributes_collection.insert_one(data)
-        # return result
-        result = user_attributes_collection.insert_one(data)
+        print("Timestamp", data['timestamp'])
+
+        if user_attributes_collection.count_documents({'user_id': user_id, 'timestamp': data['timestamp']}) == 0:
+            result = user_attributes_collection.insert_one(data)
 
         insert_counter += 1
 
@@ -216,4 +217,4 @@ def generate_mock_data(user_id):
 
     return result
 
-generate_mock_data('655ff2802c6a0e4de1d9a9d4')
+generate_mock_data('655ad12b6ac4d71bf304c5eb')
