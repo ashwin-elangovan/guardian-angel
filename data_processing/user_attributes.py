@@ -133,7 +133,7 @@ def _calculate_sleep_time(key, sleep_entries):
         sleep_duration = sleep_end - sleep_start
         sleep_time_total += sleep_duration.total_seconds()
 
-    return sleep_time_total
+    return int(sleep_time_total)
 
 def _parse_timestamps(from_time, to_time):
     try:
