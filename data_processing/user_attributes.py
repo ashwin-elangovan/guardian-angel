@@ -157,6 +157,7 @@ def _calculate_average_values(keys, results):
     for key in keys:
         average_key = f'average_{key}'
         if count_values[average_key] > 0:
-            average_values[average_key] /= count_values[average_key]
+            average_values[average_key] = round(average_values[average_key] / count_values[average_key])
+
 
     return average_values
