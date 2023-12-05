@@ -172,7 +172,7 @@ def generate_mock_data(user_id):
 
     # Set the start time 2 days earlier from the beginning of the day
     # start_time = datetime(current_date.year, current_date.month, current_date.day, 0, 0) - timedelta(days=10)
-    start_time = datetime(current_date.year, 12, 5, 17, 40)
+    start_time = datetime(current_date.year, 12, 5, 18, 1, 7)
 
     insert_counter = 0
 
@@ -199,7 +199,7 @@ def generate_mock_data(user_id):
 
         mongo = mongoData(app).mongo
         user_attributes_collection = mongo.db.UserAttributes
-        data['user_id'] = user_id
+        data['user_id'] = ObjectId(user_id)
         data['timestamp'] = datetime.fromisoformat(timestamp)
         print("Timestamp", data['timestamp'])
 
