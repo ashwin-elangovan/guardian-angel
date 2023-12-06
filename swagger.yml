@@ -223,6 +223,67 @@ paths:
               error:
                 type: string
                 description: Error message.
+  /users/{user_id}/user_attributes/recent:
+    get:
+      tags:
+        - User Attributes
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: The ID of the user.
+        - name: count
+          in: query
+          type: integer
+          required: false
+          default: 7
+          description: Number of recent user attributes to fetch (default is 7).
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              user_attributes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    blood_oxygen:
+                      type: integer
+                    calories_burnt:
+                      type: integer
+                    heart_rate:
+                      type: integer
+                    id:
+                      type: string
+                    respiratory_rate:
+                      type: integer
+                    sleep:
+                      type: integer
+                    steps_count:
+                      type: integer
+                    timestamp:
+                      type: string
+                      format: date-time
+        400:
+          description: Invalid user_id format or invalid count value
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message.
+        500:
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message.
+
   /users/register:
     post:
       tags:

@@ -57,6 +57,27 @@ def register_user():
             return jsonify({'error': UserRegistrationLocales.EMAIL_ALREADY_REGISTERED}), 400
         return jsonify({'error': f'{UserRegistrationLocales.ERROR}: {str(e)}'}), 500
 
+# User GET API
+@app.route('/users/<string:user_id>', methods=['GET'])
+@token_required
+def get_user_info(user_id):
+    try:
+        if not ObjectId(user_id):
+            return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+
+        mongo = mongoData(app).mongo
+        user_collection = mongo.db.User
+        user = user_collection.find_one({'_id': ObjectId(user_id)}, {'_id': 0})
+        if not user:
+            return jsonify({'error': UserAttributeLocales.USER_NOT_FOUND}), 404
+
+        user['id'] = user_id
+        return jsonify(user), 200
+
+    except Exception as e:
+        return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
+
+
 # User Attributes API
 @app.route('/users/<string:user_id>/user_attributes', methods=['POST'])
 @token_required
@@ -100,6 +121,7 @@ def get_user_attributes(user_id):
         from_time = request.args.get('from', '')
         to_time = request.args.get('to', '')
         filter_type = request.args.get('group_by', '')
+        static_keys = request.args.get('static_keys', '')
 
         if from_time == '' or to_time == '':
             return jsonify({'error': UserAttributeLocales.INVALID_TIMESTAMP_FORMAT}), 400
@@ -130,13 +152,48 @@ def get_user_attributes(user_id):
         db_entries = [result for result in results]
 
         if filter_type == 'day':
-            final_values = _average_values_per_day(keys, db_entries)
+            final_values = _average_values_per_day(keys, db_entries, static_keys)
         elif filter_type == 'hour':
-            final_values = _average_values_per_hour(keys, db_entries)
+            final_values = _average_values_per_hour(keys, db_entries, static_keys)
         else:
             final_values = _average_values_custom(keys, db_entries)
 
         return jsonify(final_values), 200
+
+    except Exception as e:
+        print("Exception", e)
+        return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
+
+@app.route('/users/<string:user_id>/user_attributes/recent', methods=['GET'])
+@token_required
+def get_recent_user_attributes(user_id):
+    try:
+        if not ObjectId(user_id):
+            return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+
+        user_id = ObjectId(user_id)
+        mongo = mongoData(app).mongo
+        record_count = int(request.args.get('count', 7))
+
+        if record_count <= 0:
+            return jsonify({'error': 'Invalid count value'}), 400
+
+        if record_count > 100:
+            return jsonify({'error': 'Count value too high. Try a lower value'}), 400
+
+        user_att_collection = mongo.db.UserAttributes
+        results_cursor = user_att_collection.find({'user_id': user_id}, projection={'user_id': 0}).sort('timestamp', -1).limit(record_count)
+        results_list = list(results_cursor)
+
+        serialized_results = dumps({'user_attributes': results_list})
+        deserialized_results = json.loads(serialized_results)
+
+        for event in deserialized_results['user_attributes']:
+            event['id'] = event['_id']['$oid']
+            event['timestamp'] = event['timestamp']['$date']
+            event.pop('_id', None)
+
+        return jsonify(deserialized_results), 200
 
     except Exception as e:
         print("Exception", e)

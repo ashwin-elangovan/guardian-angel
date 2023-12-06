@@ -15,6 +15,7 @@ class UserAttributeLocales:
     USER_ATTRIBUTES_ADDED_SUCCESSFULLY = 'User attributes added successfully'
     INVALID_USER_PREFERENCES = 'Invalid user preferences. Allowed values are: early, normal, late'
     INVALID_EVENT_ID = 'Invalid event_id'
+    USER_NOT_FOUND = 'User not found'
 
 class RestaurantFoodLocales:
     INVALID_RESTAURANT_ID_FORMAT = 'Invalid restaurant_id'
