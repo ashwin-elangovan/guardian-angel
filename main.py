@@ -97,15 +97,16 @@ def update_user_info(user_id):
         if not user:
             return jsonify({'error': UserAttributeLocales.USER_NOT_FOUND}), 404
 
-        for key, value in data.items():
-            user_collection.update_one({
-                "_id": user["id"]
-            }, {
-                '$set': {
-                    key: value
-                }
-            })
         user['id'] = user_id
+        for key, value in data.items():
+            user_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                {
+                    "$set": {
+                        key: value
+                    }
+                })
+
         user = user_collection.find_one({'_id': ObjectId(user_id)}, {'_id': 0})
         return jsonify(user), 200
 

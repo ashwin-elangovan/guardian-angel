@@ -162,6 +162,16 @@ paths:
           type: string
           required: true
           description: The ID of the user.
+        - name: body
+          in: body
+          required: true
+          description: JSON payload containing user attributes.
+          schema:
+            type: object
+            properties:
+              key:
+                type: string
+                description: value
       responses:
         200:
           description: Successful response
