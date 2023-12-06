@@ -97,6 +97,62 @@ paths:
               error:
                 type: string
                 description: Error message.
+  /users/{user_id}:
+    get:
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: The ID of the user.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              allergies:
+                type: array
+                items:
+                  type: string
+              email:
+                type: string
+              emergency_contact_name:
+                type: string
+              emergency_contact_number:
+                type: string
+              id:
+                type: string
+              name:
+                type: string
+              phone:
+                type: string
+        400:
+          description: Invalid user_id format
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message.
+        404:
+          description: User not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message.
+        500:
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message.
   /users/{user_id}/user_attributes:
     get:
       tags:
@@ -288,7 +344,6 @@ paths:
               error:
                 type: string
                 description: Error message.
-
   /users/register:
     post:
       tags:
