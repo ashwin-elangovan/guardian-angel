@@ -111,6 +111,20 @@ class UserAttributesTest(unittest.TestCase):
         self.db.get_collection('UserAttributes').delete_many({})
         self.db.get_collection('User').delete_many({})
 
+    def test_update_user_attributes(self):
+        user_id = self.user_id
+        data = {
+            'age': 27,
+            'gender': "Male"
+        }
+        headers = {'Content-Type': 'application/json', 'X-Api-Auth': VERIFICATION_KEY}
+        response = self.app.post(f'/users/{user_id}', json=data, headers=headers)
+        result = response.get_json()
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', result)
+        self.assertEqual(result['error'], 'Not able to update user')
+
+
     def test_add_user_attributes_success(self):
         user_id = self.user_id
         data = {
