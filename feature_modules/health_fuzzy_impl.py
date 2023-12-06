@@ -60,7 +60,7 @@ def health_monitoring_system(heart_rate_val, respiratory_rate_val, steps_count_v
 
     result = health_monitoring.output['overall_well_being']
 
-    return analyseResult(result)
+    return analyseResult(result, steps_count_val)
 
 def handleExtremeCases(heart_rate_val, respiratory_rate_val, steps_count_val):
     if (heart_rate_val == 0 or respiratory_rate_val == 0):
@@ -75,18 +75,18 @@ def analyseResult(result, steps_count_val):
     elif (result < 60):
         return "Concerning. Please visit a doctor if you are unwell"
     elif (result < 70):
-        return "Slightly abnormal trends noticed. It's possible you might be working out or sleeping. Consider visiting a doctor otherwise"
+        return "Slightly abnormal trends noticed. Based on the health score, it's possible you might be working out or sleeping. Consider visiting a doctor otherwise"
     elif (result < 80):
         if (steps_count_val > 15000):
-            return "Walking too much. Otherwise you are healthy"
+            return "Walked too much in the last hour. Otherwise you are healthy"
         elif (steps_count_val < 2000):
-            return "Very less steps walked. Otherwise you are healthy"
+            return "Very less steps walked in the last hour. Otherwise you are healthy"
         return "Normal"
     else:
         if (steps_count_val > 15000):
-            return "Walking too much. Otherwise you are healthy"
+            return "Walked too much in the last hour. Otherwise you are healthy"
         elif (steps_count_val < 2000):
-            return "Very less steps walked. Otherwise you are healthy"
+            return "Very less steps walked in the last hour. Otherwise you are healthy"
         return "Please share your fitness secrets"
 
 heart_rate_input = 80
