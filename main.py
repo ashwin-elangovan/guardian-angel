@@ -99,13 +99,13 @@ def update_user_info(user_id):
 
         user['id'] = user_id
         for key, value in data.items():
-            user_collection.update_one({
-                "_id": user_id
-            }, {
-                '$set': {
-                    key: value
-                }
-            })
+            user_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                {
+                    "$set": {
+                        key: value
+                    }
+                })
 
         user = user_collection.find_one({'_id': ObjectId(user_id)}, {'_id': 0})
         return jsonify(user), 200
