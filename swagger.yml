@@ -128,6 +128,11 @@ paths:
           type: string
           enum: ['hour', 'day']
           description: 'Filter option to get daily/hourly averages.'
+        - name: static_keys
+          in: query
+          type: string
+          enum: ['yes']
+          description: 'This is a special feature for Tejaswi Sama ^_^. When static_keys=yes, then the response will be in the usual JSON format else it will be in dynamic keys JSON format.'
       responses:
         200:
           description: 'Successful response'
