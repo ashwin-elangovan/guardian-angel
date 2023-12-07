@@ -9,7 +9,8 @@ import requests
 from bson.json_util import dumps
 import os
 from flasgger import Swagger
-from constants import REGISTRATION_REQUIRED_FIELDS, USER_ATTRIBUTE_REQUIRED_FIELDS, USER_ATTRIBUTE_FETCH_KEYS, WEATHER_API_HOST
+from constants import REGISTRATION_REQUIRED_FIELDS, USER_ATTRIBUTE_REQUIRED_FIELDS, USER_ATTRIBUTE_FETCH_KEYS, \
+    WEATHER_API_HOST
 from locales import UserAttributeLocales, UserRegistrationLocales, RestaurantFoodLocales, WeatherLocales
 import logging
 from data_access.mongoData import mongoData
@@ -17,7 +18,8 @@ from jobs.scheduler import schedule_job, get_all_job_stats, delete_job, update_j
 from feature_modules.sleep_wellness.controller import optimal_wake_up_time
 from feature_modules.health_fuzzy_impl import health_monitoring_system
 from datetime import datetime, timezone
-from data_processing.user_attributes import _parse_timestamps, _average_values_custom, _average_values_per_day, _average_values_per_hour
+from data_processing.user_attributes import _parse_timestamps, _average_values_custom, _average_values_per_day, \
+    _average_values_per_hour
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -34,6 +36,7 @@ user_collection = db.User
 existing_indexes = user_collection.index_information()
 if 'email_1' not in existing_indexes:
     user_collection.create_indexes([IndexModel([('email', ASCENDING)], unique=True)])
+
 
 # User Registration API
 @app.route('/users/register', methods=['POST'])
@@ -57,6 +60,7 @@ def register_user():
             return jsonify({'error': UserRegistrationLocales.EMAIL_ALREADY_REGISTERED}), 400
         return jsonify({'error': f'{UserRegistrationLocales.ERROR}: {str(e)}'}), 500
 
+
 # User GET API
 @app.route('/users/<string:user_id>', methods=['GET'])
 @token_required
@@ -72,6 +76,38 @@ def get_user_info(user_id):
             return jsonify({'error': UserAttributeLocales.USER_NOT_FOUND}), 404
 
         user['id'] = user_id
+        return jsonify(user), 200
+
+    except Exception as e:
+        return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
+
+
+# User POST API
+@app.route('/users/<string:user_id>', methods=['POST'])
+@token_required
+def update_user_info(user_id):
+    try:
+        if not ObjectId(user_id):
+            return jsonify({'error': UserAttributeLocales.INVALID_USER_ID_FORMAT}), 400
+
+        data = request.get_json()
+        mongo = mongoData(app).mongo
+        user_collection = mongo.db.User
+        user = user_collection.find_one({'_id': ObjectId(user_id)}, {'_id': 0})
+        if not user:
+            return jsonify({'error': UserAttributeLocales.USER_NOT_FOUND}), 404
+
+        user['id'] = user_id
+        for key, value in data.items():
+            user_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                {
+                    "$set": {
+                        key: value
+                    }
+                })
+
+        user = user_collection.find_one({'_id': ObjectId(user_id)}, {'_id': 0})
         return jsonify(user), 200
 
     except Exception as e:
@@ -106,6 +142,7 @@ def add_user_attributes(user_id):
     except Exception as e:
         return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
 
+
 # User Attributes GET API
 @app.route('/users/<string:user_id>/user_attributes', methods=['GET'])
 @token_required
@@ -132,10 +169,10 @@ def get_user_attributes(user_id):
             return jsonify({'error': UserAttributeLocales.INVALID_KEYS}), 400
 
         if filter_type == 'day' and (to_time - from_time).days > 10:
-                return jsonify({'error': 'Date range is too long. Try a shorter one'}), 400
+            return jsonify({'error': 'Date range is too long. Try a shorter one'}), 400
 
         if filter_type == 'hour' and (to_time - from_time).days > 3:
-                return jsonify({'error': 'Date range is too long. Try a shorter one'}), 400
+            return jsonify({'error': 'Date range is too long. Try a shorter one'}), 400
 
         # from_time = from_time.replace(hour=0, minute=0, second=0, microsecond=0)
         # to_time = to_time.replace(hour=23, minute=59, second=59, microsecond=999999)
@@ -164,6 +201,7 @@ def get_user_attributes(user_id):
         print("Exception", e)
         return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
 
+
 @app.route('/users/<string:user_id>/user_attributes/recent', methods=['GET'])
 @token_required
 def get_recent_user_attributes(user_id):
@@ -182,7 +220,9 @@ def get_recent_user_attributes(user_id):
             return jsonify({'error': 'Count value too high. Try a lower value'}), 400
 
         user_att_collection = mongo.db.UserAttributes
-        results_cursor = user_att_collection.find({'user_id': user_id}, projection={'user_id': 0}).sort('timestamp', -1).limit(record_count)
+        results_cursor = user_att_collection.find({'user_id': user_id}, projection={'user_id': 0}).sort('timestamp',
+                                                                                                        -1).limit(
+            record_count)
         results_list = list(results_cursor)
 
         serialized_results = dumps({'user_attributes': results_list})
@@ -198,6 +238,7 @@ def get_recent_user_attributes(user_id):
     except Exception as e:
         print("Exception", e)
         return jsonify({'error': f'{UserAttributeLocales.ERROR}: {str(e)}'}), 500
+
 
 # API endpoint to get all restaurants
 @app.route('/restaurants', methods=['GET'])
@@ -217,6 +258,7 @@ def get_restaurants():
     except Exception as e:
         print("Exception", e)
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/restaurants/<string:restaurant_id>/foods', methods=['GET'])
 @token_required
@@ -240,6 +282,7 @@ def get_foods_for_restaurant(restaurant_id):
     except Exception as e:
         print("Exception", e)
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/weather', methods=['GET'])
 @token_required
@@ -276,25 +319,30 @@ def get_weather():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/jobs', methods=['POST'])
 @token_required
 def schedule_job_route():
     return schedule_job(request)
+
 
 @app.route('/jobs/<string:job_id>', methods=['PUT'])
 @token_required
 def update_job_route(job_id):
     return update_job(request, job_id)
 
+
 @app.route('/jobs/<string:job_id>', methods=['DELETE'])
 @token_required
 def delete_job_route(job_id):
     return delete_job(request, job_id)
 
+
 @app.route('/jobs', methods=['GET'])
 @token_required
 def get_all_jobs():
     return get_all_job_stats()
+
 
 @app.route('/users/<string:user_id>/wake_up_time', methods=['GET'])
 @token_required
@@ -309,6 +357,7 @@ def wake_up_time(user_id):
         return jsonify({'error': UserAttributeLocales.INVALID_USER_PREFERENCE}), 400
 
     return jsonify({'wake_up_time': optimal_wake_up_time(user_id, user_preference)}), 200
+
 
 @app.route('/healthFuzzy', methods=['GET'])
 def get_health_update():
@@ -325,6 +374,7 @@ def get_health_update():
     except Exception as e:
         print("Exception", e)
         return jsonify({'error': f'{"ERROR"}: {str(e)}'}), 500
+
 
 @app.route('/users/<string:user_id>/events', methods=['GET'])
 @token_required
@@ -393,6 +443,7 @@ def delete_event(user_id, event_id):
 
     return jsonify({'message': 'Event deleted successfully'}), 200
 
+
 @app.route('/users/<string:user_id>/events', methods=['DELETE'])
 @token_required
 def delete_all_events(user_id):
@@ -409,6 +460,7 @@ def delete_all_events(user_id):
         return jsonify({'error': 'No events found for the user'}), 200
 
     return jsonify({'message': 'All events deleted successfully'}), 200
+
 
 @app.route('/users/<string:user_id>/events', methods=['POST'])
 @token_required
@@ -428,19 +480,20 @@ def create_events(user_id):
             return jsonify({'error': 'Invalid request format. Missing or invalid "events" key.'}), 400
 
         result = user_events_collection.insert_many([
-                    {
-                        'user_id': user_id,
-                        'event_name': event.get('event_name'),
-                        'event_description': event.get('event_description'),
-                        'timestamp': datetime.strptime(event.get('timestamp'), '%Y-%m-%dT%H:%M:%SZ')
-                    }
-                    for event in events
-                ])
+            {
+                'user_id': user_id,
+                'event_name': event.get('event_name'),
+                'event_description': event.get('event_description'),
+                'timestamp': datetime.strptime(event.get('timestamp'), '%Y-%m-%dT%H:%M:%SZ')
+            }
+            for event in events
+        ])
 
         inserted_ids = [str(inserted_id) for inserted_id in result.inserted_ids]
         event_names = [event.get('event_name') for event in events]
 
-        response_data = [{'inserted_id': inserted_id, 'event_name': event_name} for inserted_id, event_name in zip(inserted_ids, event_names)]
+        response_data = [{'inserted_id': inserted_id, 'event_name': event_name} for inserted_id, event_name in
+                         zip(inserted_ids, event_names)]
 
         return jsonify({'message': 'Events created successfully', 'events': response_data}), 201
 
@@ -449,7 +502,6 @@ def create_events(user_id):
 
 
 # Private functions
-
 
 
 if __name__ == '__main__':
