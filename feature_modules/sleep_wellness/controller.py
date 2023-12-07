@@ -5,6 +5,7 @@ from data_access.mongoData import mongoData
 from flask import Flask, request, jsonify, json
 from flask_pymongo import PyMongo
 from datetime import datetime, timezone
+import pytz
 
 app = Flask(__name__)
 def create_fuzzy_variables():
@@ -285,6 +286,7 @@ def create_fuzzy_system(rules):
     return ctrl.ControlSystem(rules)
 
 def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
+
     # Get user_input from user_attributes
     user_preference = {"early": 3, "normal": 6, "late": 9}.get(user_input, 6)
 
@@ -292,6 +294,7 @@ def predict_wake_up_time(user_id, user_input, wake_up_time_prediction):
     wake_up_time_prediction.input['avg_sleep_time'] = get_average_sleep_time(user_id)
     wake_up_time_prediction.input['calories_burnt'] = get_average_calories_burnt(user_id)
 
+    print("wake_up_time_prediction", wake_up_time_prediction)
     wake_up_time_prediction.compute()
 
     return int(wake_up_time_prediction.output['wake_up_time'])
@@ -355,8 +358,26 @@ def get_average_calories_burnt(user_id):
     try:
         mongo = mongoData(app).mongo
         keys = ['calories_burnt']
-        from_time = datetime.strptime('2023-11-30T00:00:00Z', "%Y-%m-%dT%H:%M:%SZ")
-        to_time = datetime.strptime('2023-11-30T23:59:59Z', "%Y-%m-%dT%H:%M:%SZ")
+        # Get the current date and time in UTC
+        current_utc_time = datetime.utcnow()
+
+        # Define the Phoenix timezone
+        phoenix_timezone = pytz.timezone('America/Phoenix')
+
+        # Convert UTC time to Phoenix time
+        current_phx_time = current_utc_time.replace(tzinfo=pytz.utc).astimezone(phoenix_timezone)
+
+        from_time = datetime(current_utc_time.year, current_utc_time.month, current_phx_time.day, 0, 0, 0)
+        to_time = datetime(current_utc_time.year, current_utc_time.month, current_phx_time.day, 23, 59, 59)
+
+        # from_time = datetime.strptime(from_time, "%Y-%m-%dT%H:%M:%SZ")
+        # to_time = datetime.strptime(to_time, "%Y-%m-%dT%H:%M:%SZ")
+
+        print("From time", from_time)
+        print("To time", to_time)
+
+        # from_time = datetime.strptime('2023-11-30T00:00:00Z', "%Y-%m-%dT%H:%M:%SZ")
+        # to_time = datetime.strptime('2023-11-30T23:59:59Z', "%Y-%m-%dT%H:%M:%SZ")
         query_filter = {
             'user_id': user_id,
             'timestamp': {'$gte': from_time, '$lte': to_time}
