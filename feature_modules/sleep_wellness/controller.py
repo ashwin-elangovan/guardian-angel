@@ -4,7 +4,7 @@ from skfuzzy import control as ctrl
 from data_access.mongoData import mongoData
 from flask import Flask, request, jsonify, json
 from flask_pymongo import PyMongo
-from datetime import datetime, timezone
+from datetime import datetime, timezone,timedelta
 import pytz
 
 app = Flask(__name__)
@@ -318,8 +318,26 @@ def get_average_sleep_time(user_id):
     try:
         mongo = mongoData(app).mongo
         keys = ['sleep']
-        from_time = datetime.strptime('2023-11-28T00:00:00Z', "%Y-%m-%dT%H:%M:%SZ")
-        to_time = datetime.strptime('2023-11-29T23:59:59Z', "%Y-%m-%dT%H:%M:%SZ")
+
+        # Get the current date and time in UTC
+        current_utc_time = datetime.utcnow()
+
+        # Define the Phoenix timezone
+        phoenix_timezone = pytz.timezone('America/Phoenix')
+
+        # Convert UTC time to Phoenix time
+        current_phx_time = current_utc_time.replace(tzinfo=pytz.utc).astimezone(phoenix_timezone)
+        p_from_time = current_phx_time - timedelta(days=3)
+        p_from_time = p_from_time.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        from_time = datetime(current_utc_time.year, current_utc_time.month, p_from_time.day, 0, 0, 0)
+        to_time = datetime(current_utc_time.year, current_utc_time.month, current_phx_time.day, 23, 59, 59)
+
+        # from_time = datetime.strptime('2023-11-28T00:00:00Z', "%Y-%m-%dT%H:%M:%SZ")
+        # to_time = datetime.strptime('2023-11-29T23:59:59Z', "%Y-%m-%dT%H:%M:%SZ")
+
+        print("Sleep From time", from_time)
+        print("To time", to_time)
         query_filter = {
             'user_id': user_id,
             'timestamp': {'$gte': from_time, '$lte': to_time}
