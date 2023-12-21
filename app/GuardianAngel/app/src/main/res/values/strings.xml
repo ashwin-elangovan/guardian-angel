@@ -1,0 +1,174 @@
+<resources>
+    <string name="app_name">Guardian Angel</string>
+    <string name="not_yet_registered_sign_up_now">Not yet registered? Sign Up Now</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="text_label_1">Home</string>
+    <string name="text_label_2">User Details</string>
+    <string name="title_activity_user_details">UserDetails</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="days_until_period">"%s \n Next Period: %s"</string>
+    <string name="cancel">"Close"</string>
+    <string name="dialog_supporting_text">"%s"</string>
+    <string name="dialog_title">"Today's Fact"</string>
+    <string name="supporting_text">"N/A"</string>
+    <string name="title">"N/A"</string>
+    <string name="inbox_title">asca</string>
+    <string name="outbox_title">asdasd</string>
+    <string name="favouriates_title">sdasd</string>
+    <string name="mail_subheader_title">Ttitle</string>
+    <string name="firstname">Name</string>
+    <string name="lastname">Last Name</string>
+    <string name="age">Age</string>
+    <string name="gender">Gender</string>
+    <string name="allergy">Allergies</string>
+    <string name="medical">Medical Condition</string>
+    <string name="medication">Medications</string>
+    <string name="weight">Weight</string>
+    <string name="height">Height</string>
+    <string name="blood">Blood Group</string>
+    <string name="save">Save</string>
+    <string name="profile">Profile</string>
+    <string name="cycledetails">Cycle Tracking</string>
+    <string name="about">About you</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="suggestion">Suggestions for you</string>
+    <string name="settings">Settings</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="select_wakeup_preference">Select Wakeup Preference</string>
+    <string name="large_text">
+        "Material is the metaphor.\n\n"
+
+        "A material metaphor is the unifying theory of a rationalized space and a system of motion."
+        "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
+        "technologically advanced and open to imagination and magic.\n"
+        "Surfaces and edges of the material provide visual cues that are grounded in reality. The "
+        "use of familiar tactile attributes helps users quickly understand affordances. Yet the "
+        "flexibility of the material creates new affordances that supercede those in the physical "
+        "world, without breaking the rules of physics.\n"
+        "The fundamentals of light, surface, and movement are key to conveying how objects move, "
+        "interact, and exist in space and in relation to each other. Realistic lighting shows "
+        "seams, divides space, and indicates moving parts.\n\n"
+
+        "Bold, graphic, intentional.\n\n"
+
+        "The foundational elements of print based design typography, grids, space, scale, color, "
+        "and use of imagery guide visual treatments. These elements do far more than please the "
+        "eye. They create hierarchy, meaning, and focus. Deliberate color choices, edge to edge "
+        "imagery, large scale typography, and intentional white space create a bold and graphic "
+        "interface that immerse the user in the experience.\n"
+        "An emphasis on user actions makes core functionality immediately apparent and provides "
+        "waypoints for the user.\n\n"
+
+        "Motion provides meaning.\n\n"
+
+        "Motion respects and reinforces the user as the prime mover. Primary user actions are "
+        "inflection points that initiate motion, transforming the whole design.\n"
+        "All action takes place in a single environment. Objects are presented to the user without "
+        "breaking the continuity of experience even as they transform and reorganize.\n"
+        "Motion is meaningful and appropriate, serving to focus attention and maintain continuity. "
+        "Feedback is subtle yet clear. Transitions are efﬁcient yet coherent.\n\n"
+
+        "3D world.\n\n"
+
+        "The material environment is a 3D space, which means all objects have x, y, and z "
+        "dimensions. The z-axis is perpendicularly aligned to the plane of the display, with the "
+        "positive z-axis extending towards the viewer. Every sheet of material occupies a single "
+        "position along the z-axis and has a standard 1dp thickness.\n"
+        "On the web, the z-axis is used for layering and not for perspective. The 3D world is "
+        "emulated by manipulating the y-axis.\n\n"
+
+        "Light and shadow.\n\n"
+
+        "Within the material environment, virtual lights illuminate the scene. Key lights create "
+        "directional shadows, while ambient light creates soft shadows from all angles.\n"
+        "Shadows in the material environment are cast by these two light sources. In Android "
+        "development, shadows occur when light sources are blocked by sheets of material at "
+        "various positions along the z-axis. On the web, shadows are depicted by manipulating the "
+        "y-axis only. The following example shows the card with a height of 6dp.\n\n"
+
+        "Resting elevation.\n\n"
+
+        "All material objects, regardless of size, have a resting elevation, or default elevation "
+        "that does not change. If an object changes elevation, it should return to its resting "
+        "elevation as soon as possible.\n\n"
+
+        "Component elevations.\n\n"
+
+        "The resting elevation for a component type is consistent across apps (e.g., FAB elevation "
+        "does not vary from 6dp in one app to 16dp in another app).\n"
+        "Components may have different resting elevations across platforms, depending on the depth "
+        "of the environment (e.g., TV has a greater depth than mobile or desktop).\n\n"
+
+        "Responsive elevation and dynamic elevation offsets.\n\n"
+
+        "Some component types have responsive elevation, meaning they change elevation in response "
+        "to user input (e.g., normal, focused, and pressed) or system events. These elevation "
+        "changes are consistently implemented using dynamic elevation offsets.\n"
+        "Dynamic elevation offsets are the goal elevation that a component moves towards, relative "
+        "to the component’s resting state. They ensure that elevation changes are consistent "
+        "across actions and component types. For example, all components that lift on press have "
+        "the same elevation change relative to their resting elevation.\n"
+        "Once the input event is completed or cancelled, the component will return to its resting "
+        "elevation.\n\n"
+
+        "Avoiding elevation interference.\n\n"
+
+        "Components with responsive elevations may encounter other components as they move between "
+        "their resting elevations and dynamic elevation offsets. Because material cannot pass "
+        "through other material, components avoid interfering with one another any number of ways, "
+        "whether on a per component basis or using the entire app layout.\n"
+        "On a component level, components can move or be removed before they cause interference. "
+        "For example, a floating action button (FAB) can disappear or move off screen before a "
+        "user picks up a card, or it can move if a snackbar appears.\n"
+        "On the layout level, design your app layout to minimize opportunities for interference. "
+        "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
+        "when a user tries to pick up one of cards.\n\n"
+    </string>
+    <string name="action_settings">Settings</string>
+    <string name="notification">Notifications</string>
+    <string name="back">Back</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="select_wakeup_preference_text">Select wakeup preference</string>
+    <string name="select_approximate_sleep_time_text">Select approximate sleep time</string>
+    <string name="sleep_wellness">Sleep Wellness</string>
+    <string name="enable_sleep_wellness">Enable Sleep Wellness</string>
+    <string name="none">none</string>
+    <string name="discover">Discover</string>
+    <string name="sleeptitle">How much sleep you need</string>
+    <string name="sleepdisp">Learn which factors affect sleep needs, and how to find the amount for you</string>
+    <string name="more">More</string>
+    <string name="content_description_more">More</string>
+    <string name="goal">Activity goals</string>
+    <string name="step">Step Count</string>
+    <string name="medicaldata">Medical Data</string>
+    <string name="help">Help and Feedback</string>
+    <string name="dietsuggest">Suggestions for you</string>
+    <string name="currentloc">Current Location</string>
+    <string name="noloc">No location found</string>
+    <string name="segtitletext1">You can order</string>
+    <string name="segtitletext2">You should avoid</string>
+    <string name="sleep_content">Everybody needs a different amount of sleep. To understand how much you need, start by making a note of how you feel each day. If you feel relaxed and energized, you\'ve likely had a good night\'s rest. If you haven\'t slept enough, you might feel tired and irritable. In addition, keep an eye on your sleep duration. It may sound obvious, but a quick daily check–in can help you spot patterns.\\n\\n\n        What the Science Says:\\n\\n\n        Studies show that most adults feel their best when they get between 7–9 hours of sleep per night. However, individual needs can vary. Guardian Angel, with its comprehensive sleep tracking features, becomes your personalized sleep assistant. By syncing with your wearable devices or manually inputting your sleep data, Guardian Angel provides a holistic view of your sleep patterns over time.\\n\\nTrack Your Sleep:\\n\\n\n\n    Guardian Angel allows you to effortlessly track your sleep duration and quality. The app logs the time you spend in different sleep stages, helping you understand your sleep cycles. Regular check-ins with the app enable you to correlate your sleep data with daily activities and moods, giving you actionable insights into your well-being.\\n\\n\n\n    Set Sleep Goals:\\n\\n\n\n    Based on your individual needs and preferences, Guardian Angel lets you set personalized sleep goals. Whether you aim for a consistent 8 hours or want to gradually improve your sleep duration, the app helps you stay accountable. Receive gentle reminders and insights tailored to your sleep patterns, nudging you toward better sleep hygiene.\\n\\n\n\n    Integration with Daily Feelings:\\n\\n\n\n    Combine your sleep data with the daily check-ins on how you feel using Guardian Angel. The app utilizes this holistic approach to provide recommendations for optimizing your sleep routine. If you\'ve had a particularly stressful day, Guardian Angel might suggest winding down activities to enhance your sleep quality.\\n\\n\n\n    Health Insights:\\n\\n\n\n    Beyond sleep, Guardian Angel offers a range of health insights. It aggregates data on your physical activity, nutrition, and mindfulness, creating a comprehensive profile of your well-being. By understanding the interplay between these factors, you gain a holistic perspective on your health, empowering you to make informed lifestyle choices.\\n\\n\n\n    In conclusion, Guardian Angel is not just a fitness tracker; it\'s your partner in holistic well-being. By integrating sleep tracking with other health metrics, the app enables you to embark on a journey of self-discovery, making positive changes for a healthier and more energized life.</string>
+    <string name="placestowalk">Go on a walk</string>
+    <string name="setgoaltitle">Set Your Goals</string>
+    <string name="order">Order</string>
+    <string name="na">N/A</string>
+    <string name="content_description_media">Alt Img</string>
+    <string name="location_unknown">Location Unknown</string>
+    <string name="location_updates_label">Location Updates</string>
+    <string name="ok">OK</string>
+    <string name="youareat">You are at:</string>
+    <string name="what">What\'s today</string>
+    <string name="noevent">No events today</string>
+    <string name="sunny">Sunny</string>
+    <string name="eventtitle">Planning to go out</string>
+    <string name="health_status">Your current health status</string>
+    <string name="cycletitle">Cycle Information</string>
+    <string name="vitaltitle">Your vitals</string>
+</resources>
