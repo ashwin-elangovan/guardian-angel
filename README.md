@@ -1,7 +1,23 @@
 # Guardian-Angel
-Guardian Angel is an innovative Android application designed to enhance the well-being and safety of users by monitoring and providing personalized suggestions for various aspects of their daily lives. This multifaceted app leverages real-time data, including vital signs, location, weather conditions, and reproductive health, to deliver timely and tailored recommendations.
+Guardian Angel is an innovative multifaceted Android application integrated with MATLAB which is designed for the following
+1) To control autonomous vehicles by taking into all the relative factors
+2) To enhance the well-being and safety of users by monitoring and providing personalized suggestions for various aspects of their daily lives.
+3) To real-time data, including vital signs, location, and weather conditions to deliver timely and tailored recommendations.
 
-# Health Monitoring System
+## Autonomous vehicle braking system
+
+### Context-Aware Adaptation
+The project focuses on developing a context-aware adaptation strategy for the autonomous braking system of Level 3 autonomous cars. This involves designing a controller that adjusts braking pressure based on various factors such as vehicle speed, distance between cars, and environmental conditions, while ensuring safety limits are not exceeded. The system incorporates a feedback loop controller and accounts for human intervention in case of potential collisions. Additionally, it considers human factors such as reaction time and workload based on driving context. The project is divided into three tasks: designing the advisory control for an average user, modifying it for a specific user, and finally, refining it based on data collected during deployment to personalize it for specific user profiles. This iterative approach mirrors standard context-aware application development workflows in the automotive industry.
+
+### Location-based Perception and Action in Guardian Angel for Autonomous Driving
+
+#### Phase 1:
+In this phase, Google services are integrated into the existing autonomous driving application to monitor real-time traffic conditions along the route. A new activity in the app allows users to input their starting and destination addresses, which then retrieves the route information using the Google Maps API. Traffic congestion data is obtained along the path and analyzed using a clustering algorithm to categorize road conditions into normal or poor, determining the cognitive workload accordingly.
+
+#### Phase 2:
+Phase 2 involves designing a fuzzy logic-based advisory control system for autonomous braking in a Vehicular Ad Hoc Network (VANET). Car B's autonomous braking system must react to the deceleration of Car A, which is unknown. The advisory control system estimates Car A's braking force, the distance between the vehicles, and the road condition obtained from Task 1 to determine Car B's deceleration. A switching rule determines whether Car B should switch to human control based on the calculated deceleration.
+
+## Health Monitoring System
 
 The Guardian Angel Health Monitoring System is a comprehensive feature designed to continuously monitor vital signs, including heart rate, respiratory rate, and step count. This system provides valuable insights into the user's overall well-being, promptly detecting irregularities or concerning trends. In critical situations, the app prompts the user to seek medical attention and has the capability to notify emergency contacts.
 
@@ -56,6 +72,15 @@ To test the production DB using mongo_url, kindly reach out to [ashelangovan@gma
 The python flask server is hosted on Heroku and can be accessed using the following link: [Guardian Angel Heroku](https://mc-guardian-angel-1fec5a1eb0b8.herokuapp.com/)
 
 I've written Swagger docs for the following APIs, which can be accessed [here](https://mc-guardian-angel-1fec5a1eb0b8.herokuapp.com/apidocs/).
+
+### 3) Backend implementation (MATLAB)
+The MATLAB implementation serves as a critical component in processing sensor data collected by the Android app. It focuses on analyzing health-related data using fuzzy logic inference rules to provide insights into the user's health condition. Additionally, MATLAB plays a role in data visualization and further analysis, contributing to a comprehensive health monitoring system.
+
+#### Steps to Run MATLAB Code:
+
+1) Ensure MATLAB is installed on your system.
+2) Open the MATLAB project in the MATLAB software environment.
+3) Run the MATLAB scripts inside the MATLAB folder for data analysis and visualization.
 
 ## User Flow
 
