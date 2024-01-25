@@ -1,0 +1,56 @@
+[System]
+Name='AshwinElangovan'
+Type='mamdani'
+Version=2.0
+NumInputs=3
+NumOutputs=1
+NumRules=12
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='Breaking (Deceleration) A'
+Range=[0 200]
+NumMFs=3
+MF1='low':'trimf',[-83.3333333333333 0 83.3333333333333]
+MF2='medium':'trimf',[16.6666666666667 100 183.333333333333]
+MF3='heavy':'trimf',[116.666666666667 200 283.333333333333]
+
+[Input2]
+Name='Distance'
+Range=[-65 0]
+NumMFs=2
+MF1='close':'trimf',[-119.166666666667 -65 -10.8333333333333]
+MF2='far':'trimf',[-54.1666666666667 0 54.1666666666667]
+
+[Input3]
+Name='Road'
+Range=[0 10]
+NumMFs=2
+MF1='normal':'trimf',[-8.33333333333333 0 8.33333333333333]
+MF2='poor':'trimf',[1.66666666666667 10 18.3333333333333]
+
+[Output1]
+Name='Breaking (Deceleration) B'
+Range=[-200 0]
+NumMFs=3
+MF1='low':'trimf',[-283.333333333333 -200 -116.666666666667]
+MF2='medium':'trimf',[-183.333333333333 -100 -16.6666666666667]
+MF3='heavy':'trimf',[-83.3333333333333 0 83.3333333333333]
+
+[Rules]
+1 1 1, 2 (1) : 1
+2 1 1, 2 (1) : 1
+3 1 1, 3 (1) : 1
+1 2 1, 1 (1) : 1
+2 2 1, 1 (1) : 1
+3 2 1, 2 (1) : 1
+1 1 2, 2 (1) : 1
+2 1 2, 3 (1) : 1
+3 1 2, 3 (1) : 1
+1 2 2, 2 (1) : 1
+2 2 2, 3 (1) : 1
+3 2 2, 2 (1) : 1
